@@ -1,0 +1,15 @@
+services:
+  dasein:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    image: matyushinleonid/dasein-ist-endlich-bot:latest
+    command: bot --config-path /configs/local.yaml
+    env_file:
+      - .env
+    volumes:
+      - ./configs/local.yaml:/configs/local.yaml
+
+networks:
+  dasein_ist_endlich_network:
+    driver: bridge
