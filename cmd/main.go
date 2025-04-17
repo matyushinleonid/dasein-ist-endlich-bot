@@ -1,41 +1,52 @@
 package main
 
 import (
-	"fmt"
+	"context"
+	"log"
 	"os"
+
+	"github.com/go-logr/logr"
+	"github.com/go-logr/stdr"
+	"github.com/spf13/cobra"
 
 	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/bot"
 	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/config"
-	"github.com/spf13/cobra"
 )
 
-var rootCmd = &cobra.Command{
-	Use: "root",
-}
+var (
+	rootCmd = &cobra.Command{
+		Use: "dasein-ist-endlich-bot",
+	}
+	botCmd = &cobra.Command{
+		Use: "bot",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			ctx := context.Background()
 
-var botCmd = &cobra.Command{
-	Use: "bot",
-	Run: func(cmd *cobra.Command, args []string) {
-		conf, err := config.NewConfig(configPath)
-		if err != nil {
-			fmt.Println("Error loading config:", err)
-			os.Exit(1)
-		}
-		bot := bot.NewBot(conf)
-		bot.Run()
-	},
-}
+			rootLogger := stdr.New(log.New(os.Stdout, "", log.LstdFlags|log.Llongfile))
+			ctx = logr.NewContext(ctx, rootLogger)
+			logger := logr.FromContextOrDiscard(ctx)
 
-var configPath string
+			conf, err := config.NewConfig(configPath)
+			if err != nil {
+				logger.Error(err, "loading config", "path", configPath)
+				return err
+			}
+			logger.Info("configuration loaded", "path", configPath)
+
+			b := bot.NewBot(conf)
+			return b.Run(ctx)
+		},
+	}
+	configPath string
+)
+
+func init() {
+	rootCmd.PersistentFlags().StringVar(&configPath, "config-path", "./configs/local.yaml", "Path to the config file")
+	rootCmd.AddCommand(botCmd)
+}
 
 func main() {
-	fmt.Println("Starting the application...")
-	rootCmd.PersistentFlags().StringVar(&configPath, "config-path", "/etc/config.yaml", "Path to the config file")
-	rootCmd.AddCommand(botCmd)
-
-	err := rootCmd.Execute()
-	if err != nil {
-		fmt.Println("Error executing command:", err)
+	if err := rootCmd.Execute(); err != nil {
 		os.Exit(1)
 	}
 }
