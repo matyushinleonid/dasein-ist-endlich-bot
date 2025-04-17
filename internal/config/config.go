@@ -10,8 +10,8 @@ type Config struct {
 	SomeKey int `mapstructure:"some_key"`
 }
 
-func NewConfig(configPath string) (*Config, error) {
-	viper.SetConfigFile(configPath)
+func NewConfig(path string) (*Config, error) {
+	viper.SetConfigFile(path)
 	if err := viper.ReadInConfig(); err != nil {
 		return nil, fmt.Errorf("error reading config file: %w", err)
 	}
@@ -19,6 +19,5 @@ func NewConfig(configPath string) (*Config, error) {
 	if err := viper.Unmarshal(&cfg); err != nil {
 		return nil, fmt.Errorf("error unmarshalling config: %w", err)
 	}
-	fmt.Println("Configuration successfully loaded from:", configPath)
 	return &cfg, nil
 }
