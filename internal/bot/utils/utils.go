@@ -1,4 +1,4 @@
-package telegram
+package utils
 
 import (
 	"context"
@@ -7,14 +7,7 @@ import (
 	gotelegram "github.com/go-telegram/bot"
 )
 
-type Client struct {
-}
-
-func NewClient() *Client {
-	return &Client{}
-}
-
-func (tg *Client) SendMessage(ctx context.Context, bot *gotelegram.Bot, chatID int64, text string) error {
+func SendMessage(ctx context.Context, bot *gotelegram.Bot, chatID int64, text string) error {
 	params := gotelegram.SendMessageParams{
 		ChatID: chatID,
 		Text:   text,

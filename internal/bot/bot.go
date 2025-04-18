@@ -9,46 +9,44 @@ import (
 	"github.com/go-logr/logr"
 	gotelegram "github.com/go-telegram/bot"
 	"github.com/go-telegram/bot/models"
-	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/clients/telegram"
+	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/bot/utils"
 	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/config"
 )
 
-type Bot struct {
+type DaseinBot struct {
 	cfg *config.Config
-	tg  *telegram.Client
 }
 
-func NewBot(cfg *config.Config) *Bot {
-	return &Bot{
+func NewBot(cfg *config.Config) *DaseinBot {
+	return &DaseinBot{
 		cfg: cfg,
-		tg:  telegram.NewClient(),
 	}
 }
 
-func (b *Bot) Run(ctx context.Context) error {
+func (daseinBot *DaseinBot) Run(ctx context.Context) error {
 	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt)
 	defer cancel()
 	logger := logr.FromContextOrDiscard(ctx)
 
 	opts := []gotelegram.Option{
-		gotelegram.WithDefaultHandler(b.handleUpdate),
+		gotelegram.WithDefaultHandler(daseinBot.handleUpdate),
 	}
-	if b.cfg.Bot.CheckIfUserAllowed {
-		opts = append(opts, gotelegram.WithMiddlewares(b.isUserAllowed))
+	if daseinBot.cfg.CheckIfUserAllowed {
+		opts = append(opts, gotelegram.WithMiddlewares(daseinBot.isUserAllowed))
 	}
 
-	tg, err := gotelegram.New(b.cfg.Bot.Token, opts...)
+	bot, err := gotelegram.New(daseinBot.cfg.Token, opts...)
 	if err != nil {
 		return fmt.Errorf("failed to create Telegram bot: %w", err)
 	}
 
 	logger.Info("starting bot")
-	tg.Start(ctx)
+	bot.Start(ctx)
 	logger.Info("bot stopped")
 	return nil
 }
 
-func (b *Bot) handleUpdate(ctx context.Context, tg *gotelegram.Bot, update *models.Update) {
+func (daseinBot *DaseinBot) handleUpdate(ctx context.Context, bot *gotelegram.Bot, update *models.Update) {
 	logger := logr.FromContextOrDiscard(ctx).WithName("handleUpdate")
 	if update.Message == nil {
 		return
@@ -59,7 +57,7 @@ func (b *Bot) handleUpdate(ctx context.Context, tg *gotelegram.Bot, update *mode
 		"user_id", update.Message.From.ID,
 	)
 
-	if err := b.tg.SendMessage(ctx, tg, update.Message.Chat.ID, update.Message.Text); err != nil {
+	if err := utils.SendMessage(ctx, bot, update.Message.Chat.ID, update.Message.Text); err != nil {
 		logger.Error(err,
 			"unable to send message",
 			"chat_id", update.Message.Chat.ID,
