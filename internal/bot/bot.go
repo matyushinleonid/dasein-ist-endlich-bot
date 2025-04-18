@@ -8,8 +8,6 @@ import (
 
 	"github.com/go-logr/logr"
 	gotelegram "github.com/go-telegram/bot"
-	"github.com/go-telegram/bot/models"
-	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/bot/utils"
 	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/config"
 )
 
@@ -29,39 +27,19 @@ func (daseinBot *DaseinBot) Run(ctx context.Context) error {
 	logger := logr.FromContextOrDiscard(ctx)
 
 	opts := []gotelegram.Option{
-		gotelegram.WithDefaultHandler(daseinBot.handleUpdate),
+		gotelegram.WithDefaultHandler(daseinBot.answerHandler),
 	}
 	if daseinBot.cfg.CheckIfUserAllowed {
 		opts = append(opts, gotelegram.WithMiddlewares(daseinBot.isUserAllowed))
 	}
-
 	bot, err := gotelegram.New(daseinBot.cfg.Token, opts...)
 	if err != nil {
 		return fmt.Errorf("failed to create Telegram bot: %w", err)
 	}
+	bot.RegisterHandler(gotelegram.HandlerTypeMessageText, "/askme", gotelegram.MatchTypeExact, daseinBot.askMeHandler)
 
 	logger.Info("starting bot")
 	bot.Start(ctx)
 	logger.Info("bot stopped")
 	return nil
-}
-
-func (daseinBot *DaseinBot) handleUpdate(ctx context.Context, bot *gotelegram.Bot, update *models.Update) {
-	logger := logr.FromContextOrDiscard(ctx).WithName("handleUpdate")
-	if update.Message == nil {
-		return
-	}
-	logger.Info(
-		"received message",
-		"chat_id", update.Message.Chat.ID,
-		"user_id", update.Message.From.ID,
-	)
-
-	if err := utils.SendMessage(ctx, bot, update.Message.Chat.ID, update.Message.Text); err != nil {
-		logger.Error(err,
-			"unable to send message",
-			"chat_id", update.Message.Chat.ID,
-			"text", update.Message.Text,
-		)
-	}
 }

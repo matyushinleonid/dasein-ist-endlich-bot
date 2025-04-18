@@ -7,9 +7,10 @@ import (
 )
 
 type Config struct {
-	Token              string  `mapstructure:"token"`
-	CheckIfUserAllowed bool    `mapstructure:"check_if_user_allowed"`
-	AllowedUsers       []int64 `mapstructure:"allowed_users"`
+	Token              string   `mapstructure:"token"`
+	CheckIfUserAllowed bool     `mapstructure:"check_if_user_allowed"`
+	AllowedUsers       []int64  `mapstructure:"allowed_users"`
+	Questions          []string `mapstructure:"questions"`
 }
 
 func NewConfig(path string) (*Config, error) {
