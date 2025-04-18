@@ -9,9 +9,9 @@ import (
 type Config struct {
 	SomeKey int `mapstructure:"some_key"`
 	Bot     struct {
-		Token              string `mapstructure:"token"`
-		CheckIfUserAllowed bool   `mapstructure:"check_if_user_allowed"`
-		AllowedUsers       []int  `mapstructure:"allowed_users"`
+		Token              string  `mapstructure:"token"`
+		CheckIfUserAllowed bool    `mapstructure:"check_if_user_allowed"`
+		AllowedUsers       []int64 `mapstructure:"allowed_users"`
 	} `mapstructure:"bot"`
 }
 
