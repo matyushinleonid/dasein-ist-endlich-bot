@@ -8,10 +8,21 @@ import (
 
 type Config struct {
 	SomeKey int `mapstructure:"some_key"`
+	Bot     struct {
+		Token              string `mapstructure:"token"`
+		CheckIfUserAllowed bool   `mapstructure:"check_if_user_allowed"`
+		AllowedUsers       []int  `mapstructure:"allowed_users"`
+	} `mapstructure:"bot"`
 }
 
 func NewConfig(path string) (*Config, error) {
 	viper.SetConfigFile(path)
+	err := viper.BindEnv("bot.token", "TELEGRAM_BOT_TOKEN")
+	if err != nil {
+		return nil, fmt.Errorf("error binding env var: %w", err)
+	}
+	viper.AutomaticEnv()
+
 	if err := viper.ReadInConfig(); err != nil {
 		return nil, fmt.Errorf("error reading config file: %w", err)
 	}
