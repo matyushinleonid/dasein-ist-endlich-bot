@@ -22,7 +22,7 @@ var (
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := context.Background()
 
-			rootLogger := stdr.New(log.New(os.Stdout, "", log.LstdFlags|log.Llongfile))
+			rootLogger := stdr.New(log.New(os.Stdout, "", log.LstdFlags|log.Llongfile)).WithName("bot")
 			ctx = logr.NewContext(ctx, rootLogger)
 			logger := logr.FromContextOrDiscard(ctx)
 

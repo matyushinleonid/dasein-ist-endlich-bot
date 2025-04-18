@@ -21,5 +21,6 @@ FROM scratch
 WORKDIR /app
 
 COPY --from=builder /app/dasein-ist-endlich-bot .
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
 ENTRYPOINT ["/app/dasein-ist-endlich-bot"]
