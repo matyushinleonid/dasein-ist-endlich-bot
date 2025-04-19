@@ -8,16 +8,19 @@ import (
 
 	"github.com/go-logr/logr"
 	gotelegram "github.com/go-telegram/bot"
+	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/client/openai"
 	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/config"
 )
 
 type DaseinBot struct {
-	cfg *config.Config
+	cfg          *config.Config
+	openAIClient openai.Client
 }
 
 func NewBot(cfg *config.Config) *DaseinBot {
 	return &DaseinBot{
-		cfg: cfg,
+		cfg:          cfg,
+		openAIClient: openai.NewClient(cfg.OpenAI),
 	}
 }
 

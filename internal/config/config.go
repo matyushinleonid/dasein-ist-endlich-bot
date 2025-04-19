@@ -11,12 +11,23 @@ type Config struct {
 	CheckIfUserAllowed bool     `mapstructure:"check_if_user_allowed"`
 	AllowedUsers       []int64  `mapstructure:"allowed_users"`
 	Questions          []string `mapstructure:"questions"`
+
+	OpenAI OpenAIConfig `mapstructure:"openai"`
+}
+
+type OpenAIConfig struct {
+	APIKey string `mapstructure:"api_key"`
+	Model  string `mapstructure:"model"`
+	Dummy  bool   `mapstructure:"dummy"`
 }
 
 func NewConfig(path string) (*Config, error) {
 	viper.SetConfigFile(path)
-	err := viper.BindEnv("token", "TELEGRAM_BOT_TOKEN")
-	if err != nil {
+
+	if err := viper.BindEnv("openai.api_key", "OPENAI_API_KEY"); err != nil {
+		return nil, fmt.Errorf("error binding env var: %w", err)
+	}
+	if err := viper.BindEnv("token", "TELEGRAM_BOT_TOKEN"); err != nil {
 		return nil, fmt.Errorf("error binding env var: %w", err)
 	}
 	viper.AutomaticEnv()

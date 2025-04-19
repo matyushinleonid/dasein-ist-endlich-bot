@@ -74,14 +74,17 @@ func (daseinBot *DaseinBot) answerHandler(ctx context.Context, bot *gotelegram.B
 	for i, ans := range conv.Answers {
 		summary += fmt.Sprintf("%d) %s — %s\n", i+1, daseinBot.cfg.Questions[i], ans)
 	}
-	err := utils.SendMessage(ctx, bot, chatID, summary)
+
+	response, err := daseinBot.openAIClient.SendText(ctx, summary)
 	if err != nil {
 		logger.Error(err,
-			"unable to send message",
+			"unable to query OpenAI",
 			"chat_id", chatID,
 			"text", update.Message.Text,
 		)
+		return
 	}
+	err = utils.SendMessage(ctx, bot, chatID, response)
 
 	convsMu.Lock()
 	delete(convs, chatID)
