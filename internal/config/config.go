@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/spf13/viper"
 )
@@ -10,12 +11,14 @@ type Config struct {
 	Token              string   `mapstructure:"token"`
 	CheckIfUserAllowed bool     `mapstructure:"check_if_user_allowed"`
 	AllowedUsers       []int64  `mapstructure:"allowed_users"`
+	Debug              bool     `mapstructure:"debug"`
 	Questions          []string `mapstructure:"questions"`
 	Start              string   `mapstructure:"start"`
 	Help               string   `mapstructure:"help"`
 	About              string   `mapstructure:"about"`
 
-	OpenAI OpenAIConfig `mapstructure:"openai"`
+	OpenAI  OpenAIConfig  `mapstructure:"openai"`
+	MongoDB MongoDBConfig `mapstructure:"mongodb"`
 }
 
 type OpenAIConfig struct {
@@ -25,6 +28,15 @@ type OpenAIConfig struct {
 	DeveloperMessage string `mapstructure:"developer_message"`
 }
 
+type MongoDBConfig struct {
+	URI            string        `mapstructure:"uri"`
+	Username       string        `mapstructure:"username"`
+	Password       string        `mapstructure:"password"`
+	Database       string        `mapstructure:"database"`
+	Collection     string        `mapstructure:"collection"`
+	ConnectTimeout time.Duration `mapstructure:"connect_timeout"`
+}
+
 func NewConfig(path string) (*Config, error) {
 	viper.SetConfigFile(path)
 
@@ -32,6 +44,9 @@ func NewConfig(path string) (*Config, error) {
 		return nil, fmt.Errorf("error binding env var: %w", err)
 	}
 	if err := viper.BindEnv("token", "TELEGRAM_BOT_TOKEN"); err != nil {
+		return nil, fmt.Errorf("error binding env var: %w", err)
+	}
+	if err := viper.BindEnv("mongodb.password", "MONGO_PASSWORD"); err != nil {
 		return nil, fmt.Errorf("error binding env var: %w", err)
 	}
 	viper.AutomaticEnv()

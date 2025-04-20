@@ -11,7 +11,7 @@ import (
 
 func (daseinBot *DaseinBot) isUserAllowed(next gotelegram.HandlerFunc) gotelegram.HandlerFunc {
 	return func(ctx context.Context, bot *gotelegram.Bot, update *models.Update) {
-		logger := logr.FromContextOrDiscard(ctx).WithName("isUserAllowed")
+		logger := logr.FromContextOrDiscard(ctx).WithName("isUserAllowed").WithValues("chat_id", update.Message.Chat.ID, "user_id", update.Message.From.ID)
 		userID := update.Message.From.ID
 		allowed := false
 		for _, allowedUser := range daseinBot.cfg.AllowedUsers {
@@ -23,11 +23,7 @@ func (daseinBot *DaseinBot) isUserAllowed(next gotelegram.HandlerFunc) gotelegra
 		if !allowed {
 			logger.Info("user not allowed", "user_id", userID)
 			if err := utils.SendMessage(ctx, bot, update.Message.Chat.ID, "Get lost!"); err != nil {
-				logger.Error(err,
-					"unable to send message",
-					"chat_id", update.Message.Chat.ID,
-					"text", update.Message.Text,
-				)
+				logger.Error(err, "unable to send message")
 			}
 			return
 		}

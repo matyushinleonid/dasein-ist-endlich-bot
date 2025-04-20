@@ -65,9 +65,9 @@ func (r *RealClient) SendJSON(ctx context.Context, userID int64, userMessage, sc
 			},
 		},
 		Messages: []openai.ChatCompletionMessageParamUnion{
-			openai.DeveloperMessage("Current datetime: " + time.Now().Format("2006-01-02 15:04:05")),
 			openai.DeveloperMessage(r.developerMessage),
 			openai.UserMessage(userMessage),
+			openai.DeveloperMessage("Current datetime (When user have answered the questions): " + time.Now().Format("2006-01-02 15:04:05")),
 		},
 	}
 

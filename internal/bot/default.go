@@ -10,16 +10,12 @@ import (
 )
 
 func (daseinBot *DaseinBot) defaultHandler(ctx context.Context, bot *bot.Bot, update *models.Update) {
-	logger := logr.FromContextOrDiscard(ctx).WithName("defaultHandler")
+	logger := logr.FromContextOrDiscard(ctx).WithName("defaultHandler").WithValues("chat_id", update.Message.Chat.ID)
 
 	if update.Message == nil {
 		return
 	}
 	if err := utils.SendMessage(ctx, bot, update.Message.Chat.ID, update.Message.Text); err != nil {
-		logger.Error(err,
-			"unable to send message",
-			"chat_id", update.Message.Chat.ID,
-			"text", update.Message.Text,
-		)
+		logger.Error(err, "unable to send message")
 	}
 }

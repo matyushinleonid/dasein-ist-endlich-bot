@@ -12,15 +12,11 @@ func (daseinBot *DaseinBot) isUpdateLegal(next gotelegram.HandlerFunc) gotelegra
 	return func(ctx context.Context, bot *gotelegram.Bot, update *models.Update) {
 		logger := logr.FromContextOrDiscard(ctx).WithName("isUpdateLegal")
 		if update.Message == nil {
-			logger.Info(
-				"message is empty",
-			)
+			logger.Info("message is empty")
 			return
 		}
 		if update.Message.Text == "" {
-			logger.Info(
-				"message text is empty",
-			)
+			logger.Info("message text is empty")
 			return
 		}
 		next(ctx, bot, update)

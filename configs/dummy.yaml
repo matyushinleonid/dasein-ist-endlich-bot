@@ -1,5 +1,6 @@
 check_if_user_allowed: true
 allowed_users: [162573173]
+debug: true
 start: "Start command"
 about: "About command"
 help: "Help command"
@@ -12,3 +13,8 @@ openai:
   model: "fake-gpt-3.5"
   dummy: true
   developer_message: "You are a helpful assistant."
+mongodb:
+  uri: "mongodb://mongodb:27017"
+  database: "dasein_bot"
+  collection: "dasein_bot"
+  connect_timeout: 5

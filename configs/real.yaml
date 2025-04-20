@@ -1,7 +1,8 @@
 check_if_user_allowed: true
 allowed_users: [162573173]
+debug: true
 start: "Welcome to the Dasein ist endlich bot! Press /begin to start a new conversation."
-about: "**Dasein ist endlich** bot by Leonid Matyushin. [GitHub](https://github.com/matyushinleonid/dasein-ist-endlich-bot)"
+about: "Dasein ist endlich bot by Leonid Matyushin. GitHub: https://github.com/matyushinleonid/dasein-ist-endlich-bot"
 help: "Some help on how to use the bot"
 default: "Your response history is empty. Press /begin to start a new conversation."
 illegal: "The action you are trying to perform is not allowed. Press /help to get help."
@@ -18,4 +19,11 @@ openai:
     in this world and provide him with an explanation of how 
     you got to this number (but without arithmetic operations).
     Try to be as accurate as possible, even if the amount of data
-    is limited.
+    is limited. You should respond in a language the user
+    have used in their answers. Let the user know the exact 
+    number of days they lived so far since they were born.
+mongodb:
+  uri: "mongodb://mongodb:27017"
+  database: "dasein_bot"
+  collection: "dasein_bot"
+  connect_timeout: 5

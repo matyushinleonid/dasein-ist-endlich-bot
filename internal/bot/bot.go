@@ -8,6 +8,7 @@ import (
 
 	"github.com/go-logr/logr"
 	gotelegram "github.com/go-telegram/bot"
+	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/client/mongo"
 	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/client/openai"
 	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/config"
 )
@@ -15,12 +16,18 @@ import (
 type DaseinBot struct {
 	cfg          *config.Config
 	openAIClient openai.Client
+	mongoClient  mongo.Client
 }
 
 func NewBot(cfg *config.Config) *DaseinBot {
+	mcli, err := mongo.NewClient(cfg.MongoDB)
+	if err != nil {
+		panic("failed to init mongo: " + err.Error())
+	}
 	return &DaseinBot{
 		cfg:          cfg,
 		openAIClient: openai.NewClient(cfg.OpenAI),
+		mongoClient:  mcli,
 	}
 }
 

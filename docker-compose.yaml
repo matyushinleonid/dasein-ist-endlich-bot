@@ -8,7 +8,21 @@ services:
     env_file:
       - .env
     volumes:
-      - ./configs/local.yaml:/configs/local.yaml
+      - ./configs/dummy.yaml:/configs/local.yaml
+    depends_on:
+      - mongodb
+    networks:
+      - dasein_ist_endlich_network
+
+  mongodb:
+    image: mongo:8.0
+    container_name: mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    networks:
+      - dasein_ist_endlich_network
+
 
 networks:
   dasein_ist_endlich_network:

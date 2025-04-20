@@ -43,7 +43,7 @@ var (
 )
 
 func (daseinBot *DaseinBot) beginHandler(ctx context.Context, bot *gotelegram.Bot, update *models.Update) {
-	logger := logr.FromContextOrDiscard(ctx).WithName("beginHandler")
+	logger := logr.FromContextOrDiscard(ctx).WithName("beginHandler").WithValues("chat_id", update.Message.Chat.ID)
 
 	chatID := update.Message.Chat.ID
 	convsMu.Lock()
@@ -55,16 +55,12 @@ func (daseinBot *DaseinBot) beginHandler(ctx context.Context, bot *gotelegram.Bo
 
 	err := utils.SendMessage(ctx, bot, chatID, daseinBot.cfg.Questions[0])
 	if err != nil {
-		logger.Error(err,
-			"unable to send message",
-			"chat_id", chatID,
-			"text", update.Message.Text,
-		)
+		logger.Error(err, "unable to send message")
 	}
 }
 
 func (daseinBot *DaseinBot) answerHandler(ctx context.Context, bot *gotelegram.Bot, update *models.Update) {
-	logger := logr.FromContextOrDiscard(ctx).WithName("answerHandler")
+	logger := logr.FromContextOrDiscard(ctx).WithName("answerHandler").WithValues("chat_id", update.Message.Chat.ID)
 
 	chatID := update.Message.Chat.ID
 
@@ -82,20 +78,13 @@ func (daseinBot *DaseinBot) answerHandler(ctx context.Context, bot *gotelegram.B
 	if conv.Stage < len(daseinBot.cfg.Questions) {
 		err := utils.SendMessage(ctx, bot, chatID, daseinBot.cfg.Questions[conv.Stage])
 		if err != nil {
-			logger.Error(err,
-				"unable to send message",
-				"chat_id", chatID,
-				"text", update.Message.Text,
-			)
+			logger.Error(err, "unable to send message")
 		}
 		return
 	}
 
 	if err := utils.SendTypingAction(ctx, bot, chatID); err != nil {
-		logger.Error(err,
-			"unable to send typing action",
-			"chat_id", chatID,
-		)
+		logger.Error(err, "unable to send typing action")
 	}
 
 	summary := ""
@@ -106,10 +95,12 @@ func (daseinBot *DaseinBot) answerHandler(ctx context.Context, bot *gotelegram.B
 	var response openAIResponse
 	err := daseinBot.openAIClient.SendJSONUnmarshal(ctx, chatID, summary, "openAIResponseSchema", openAIResponseSchema, &response)
 	if err != nil {
-		logger.Error(err,
-			"unable to query OpenAI",
-			"chat_id", chatID,
-		)
+		logger.Error(err, "unable to query OpenAI")
+	}
+
+	upd := Record{DaysLeft: response.DaysLeft, Calculated: true}
+	if _, err = daseinBot.mongoClient.Update(ctx, chatID, upd); err != nil {
+		logger.Error(err, "failed to update record")
 	}
 
 	responseText := fmt.Sprintf("У вас осталось %d дней в этом мире.\n\n%s", response.DaysLeft, response.Description)
