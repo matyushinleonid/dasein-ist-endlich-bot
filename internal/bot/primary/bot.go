@@ -1,4 +1,4 @@
-package mainbot
+package primary
 
 import (
 	"context"

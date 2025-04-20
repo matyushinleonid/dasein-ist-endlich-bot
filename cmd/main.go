@@ -7,9 +7,9 @@ import (
 
 	"github.com/go-logr/logr"
 	"github.com/go-logr/stdr"
+	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/bot/primary"
 	"github.com/spf13/cobra"
 
-	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/bot/mainbot"
 	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/config"
 )
 
@@ -33,7 +33,7 @@ var (
 			}
 			logger.Info("configuration loaded", "path", configPath)
 
-			b := mainbot.New(conf)
+			b := primary.New(conf)
 			return b.Run(ctx)
 		},
 	}
