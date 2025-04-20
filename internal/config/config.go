@@ -11,6 +11,9 @@ type Config struct {
 	CheckIfUserAllowed bool     `mapstructure:"check_if_user_allowed"`
 	AllowedUsers       []int64  `mapstructure:"allowed_users"`
 	Questions          []string `mapstructure:"questions"`
+	Start              string   `mapstructure:"start"`
+	Help               string   `mapstructure:"help"`
+	About              string   `mapstructure:"about"`
 
 	OpenAI OpenAIConfig `mapstructure:"openai"`
 }

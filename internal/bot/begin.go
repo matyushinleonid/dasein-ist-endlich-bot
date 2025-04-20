@@ -42,8 +42,8 @@ var (
 	convsMu sync.Mutex
 )
 
-func (daseinBot *DaseinBot) askMeHandler(ctx context.Context, bot *gotelegram.Bot, update *models.Update) {
-	logger := logr.FromContextOrDiscard(ctx).WithName("askMeHandler")
+func (daseinBot *DaseinBot) beginHandler(ctx context.Context, bot *gotelegram.Bot, update *models.Update) {
+	logger := logr.FromContextOrDiscard(ctx).WithName("beginHandler")
 
 	chatID := update.Message.Chat.ID
 	convsMu.Lock()
