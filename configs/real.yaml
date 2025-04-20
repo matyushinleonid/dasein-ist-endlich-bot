@@ -1,0 +1,16 @@
+check_if_user_allowed: true
+allowed_users: [162573173]
+questions:
+  - "Ваша дата рождения (в формате ДД.ММ.ГГГГ)"
+  - "Ваш пол"
+  - "Ваш рост (в см)"
+  - "Ваш вес (в кг)"
+openai:
+  model: "gpt-4.1-mini"
+  dummy: false
+  developer_message: >
+    Your goal is to estimate how many days the user have left
+    in this world and provide him with an explanation of how 
+    you got to this number (but without arithmetic operations).
+    Try to be as accurate as possible, even if the amount of data
+    is limited.
