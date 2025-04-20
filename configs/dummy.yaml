@@ -1,14 +1,15 @@
-check_if_user_allowed: true
-allowed_users: [162573173]
-debug: true
-start: "Start command"
-about: "About command"
-help: "Help command"
-default: "Your response history is empty. Press /begin to start a new conversation."
-illegal: "The action you are trying to perform is not allowed. Press /help to get help."
-questions:
-  - "Your Date of Birth?"
-  - "Your gender?"
+dasein_bot:
+  check_if_user_allowed: true
+  allowed_users: [162573173]
+  debug: true
+  start: "Start command"
+  about: "About command"
+  help: "Help command"
+  default: "Your response history is empty. Press /begin to start a new conversation."
+  illegal: "The action you are trying to perform is not allowed. Press /help to get help."
+  questions:
+    - "Your Date of Birth?"
+    - "Your gender?"
 openai:
   model: "fake-gpt-3.5"
   dummy: true

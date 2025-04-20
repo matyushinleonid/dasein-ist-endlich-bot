@@ -8,6 +8,12 @@ import (
 )
 
 type Config struct {
+	DaseinBot DaseinBotConfig `mapstructure:"dasein_bot"`
+	OpenAI    OpenAIConfig    `mapstructure:"openai"`
+	MongoDB   MongoDBConfig   `mapstructure:"mongodb"`
+}
+
+type DaseinBotConfig struct {
 	Token              string   `mapstructure:"token"`
 	CheckIfUserAllowed bool     `mapstructure:"check_if_user_allowed"`
 	AllowedUsers       []int64  `mapstructure:"allowed_users"`
@@ -16,9 +22,6 @@ type Config struct {
 	Start              string   `mapstructure:"start"`
 	Help               string   `mapstructure:"help"`
 	About              string   `mapstructure:"about"`
-
-	OpenAI  OpenAIConfig  `mapstructure:"openai"`
-	MongoDB MongoDBConfig `mapstructure:"mongodb"`
 }
 
 type OpenAIConfig struct {
@@ -40,10 +43,10 @@ type MongoDBConfig struct {
 func NewConfig(path string) (*Config, error) {
 	viper.SetConfigFile(path)
 
-	if err := viper.BindEnv("openai.api_key", "OPENAI_API_KEY"); err != nil {
+	if err := viper.BindEnv("dasein_bot.token", "TELEGRAM_BOT_TOKEN"); err != nil {
 		return nil, fmt.Errorf("error binding env var: %w", err)
 	}
-	if err := viper.BindEnv("token", "TELEGRAM_BOT_TOKEN"); err != nil {
+	if err := viper.BindEnv("openai.api_key", "OPENAI_API_KEY"); err != nil {
 		return nil, fmt.Errorf("error binding env var: %w", err)
 	}
 	if err := viper.BindEnv("mongodb.password", "MONGO_PASSWORD"); err != nil {

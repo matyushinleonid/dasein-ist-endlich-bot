@@ -1,0 +1,40 @@
+package handler
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+
+	"github.com/go-logr/logr"
+	gotelegram "github.com/go-telegram/bot"
+	"github.com/go-telegram/bot/models"
+	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/bot"
+	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/record"
+	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/utils"
+)
+
+func HelpHandler(b *bot.DaseinBot) gotelegram.HandlerFunc {
+	return func(ctx context.Context, tgbot *gotelegram.Bot, update *models.Update) {
+		logger := logr.FromContextOrDiscard(ctx).WithName("helpHandler").WithValues("chat_id", update.Message.Chat.ID)
+
+		msg := b.Cfg.Help
+		if b.Cfg.Debug {
+			chatID := update.Message.Chat.ID
+			var rec record.Record
+			err := b.MongoClient.Get(ctx, chatID, &rec)
+			if err != nil {
+				logger.Error(err, "failed to get record")
+			}
+			prettyJSON, err := json.MarshalIndent(rec, "", "\t")
+			if err != nil {
+				logger.Error(err, "failed to marshal record")
+			}
+			msg += fmt.Sprintf("\n\nDebug info:\n\tRecord:\n%s\n", prettyJSON)
+		}
+
+		err := utils.SendMessage(ctx, tgbot, update.Message.Chat.ID, msg)
+		if err != nil {
+			logger.Error(err, "unable to send message")
+		}
+	}
+}

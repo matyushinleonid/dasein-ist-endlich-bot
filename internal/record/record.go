@@ -1,4 +1,4 @@
-package bot
+package record
 
 type Record struct {
 	ID         int64 `bson:"_id"`

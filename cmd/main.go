@@ -7,9 +7,9 @@ import (
 
 	"github.com/go-logr/logr"
 	"github.com/go-logr/stdr"
+	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/bot/primary"
 	"github.com/spf13/cobra"
 
-	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/bot"
 	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/config"
 )
 
@@ -18,11 +18,11 @@ var (
 		Use: "dasein-ist-endlich-bot",
 	}
 	botCmd = &cobra.Command{
-		Use: "bot",
+		Use: "main-bot",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := context.Background()
 
-			rootLogger := stdr.New(log.New(os.Stdout, "", log.LstdFlags|log.Llongfile)).WithName("bot")
+			rootLogger := stdr.New(log.New(os.Stdout, "", log.LstdFlags|log.Llongfile)).WithName("Bot")
 			ctx = logr.NewContext(ctx, rootLogger)
 			logger := logr.FromContextOrDiscard(ctx)
 
@@ -33,7 +33,7 @@ var (
 			}
 			logger.Info("configuration loaded", "path", configPath)
 
-			b := bot.NewBot(conf)
+			b := primary.New(conf)
 			return b.Run(ctx)
 		},
 	}
