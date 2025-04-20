@@ -2,6 +2,8 @@ package bot
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 
 	"github.com/go-logr/logr"
 	"github.com/go-telegram/bot"
@@ -10,16 +12,25 @@ import (
 )
 
 func (daseinBot *DaseinBot) helpHandler(ctx context.Context, bot *bot.Bot, update *models.Update) {
-	logger := logr.FromContextOrDiscard(ctx).WithName("helpHandler")
+	logger := logr.FromContextOrDiscard(ctx).WithName("helpHandler").WithValues("chat_id", update.Message.Chat.ID)
 
-	if update.Message == nil {
-		return
+	msg := daseinBot.cfg.Help
+	if daseinBot.cfg.Debug {
+		chatID := update.Message.Chat.ID
+		var rec Record
+		err := daseinBot.mongoClient.Get(ctx, chatID, &rec)
+		if err != nil {
+			logger.Error(err, "failed to get record")
+		}
+		prettyJSON, err := json.MarshalIndent(rec, "", "\t")
+		if err != nil {
+			logger.Error(err, "failed to marshal record")
+		}
+		msg += fmt.Sprintf("\n\nDebug info:\n\tRecord:\n%s\n", prettyJSON)
 	}
-	if err := utils.SendMessage(ctx, bot, update.Message.Chat.ID, daseinBot.cfg.Help); err != nil {
-		logger.Error(err,
-			"unable to send message",
-			"chat_id", update.Message.Chat.ID,
-			"text", daseinBot.cfg.Help,
-		)
+
+	err := utils.SendMessage(ctx, bot, update.Message.Chat.ID, msg)
+	if err != nil {
+		logger.Error(err, "unable to send message")
 	}
 }
