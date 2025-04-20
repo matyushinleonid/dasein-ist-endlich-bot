@@ -14,7 +14,7 @@ import (
 )
 
 type DaseinBot struct {
-	cfg          *config.Config
+	cfg          *config.DaseinBotConfig
 	openAIClient openai.Client
 	mongoClient  mongo.Client
 }
@@ -25,7 +25,7 @@ func NewBot(cfg *config.Config) *DaseinBot {
 		panic("failed to init mongo: " + err.Error())
 	}
 	return &DaseinBot{
-		cfg:          cfg,
+		cfg:          &cfg.DaseinBot,
 		openAIClient: openai.NewClient(cfg.OpenAI),
 		mongoClient:  mcli,
 	}
