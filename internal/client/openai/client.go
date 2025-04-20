@@ -7,12 +7,12 @@ import (
 )
 
 type Client interface {
-	SendText(ctx context.Context, prompt string) (string, error)
+	SendText(ctx context.Context, userID int64, userMessage string) (string, error)
 }
 
 func NewClient(cfg config.OpenAIConfig) Client {
 	if cfg.Dummy {
-		return NewDummyClient(cfg)
+		return NewDummyClient()
 	}
 	return NewRealClient(cfg)
 }

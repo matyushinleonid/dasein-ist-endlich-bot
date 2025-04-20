@@ -6,3 +6,4 @@ questions:
 openai:
   model: "fake-gpt-3.5"
   dummy: true
+  developer_message: "You are a helpful assistant."

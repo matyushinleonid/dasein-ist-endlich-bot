@@ -3,20 +3,20 @@ package openai
 import (
 	"context"
 	"fmt"
-
-	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/config"
+	"time"
 )
 
 type DummyClient struct {
-	model string
+	sleep time.Duration
 }
 
-func NewDummyClient(cfg config.OpenAIConfig) *DummyClient {
+func NewDummyClient() *DummyClient {
 	return &DummyClient{
-		model: cfg.Model,
+		sleep: 2 * time.Second,
 	}
 }
 
-func (d *DummyClient) SendText(ctx context.Context, prompt string) (string, error) {
-	return fmt.Sprintf("Model: %s \n Dummy response to: \n %s", d.model, prompt), nil
+func (d *DummyClient) SendText(ctx context.Context, userID int64, userMessage string) (string, error) {
+	time.Sleep(d.sleep)
+	return fmt.Sprintf("Dummy response to: \n %s", userMessage), nil
 }
