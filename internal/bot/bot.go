@@ -33,13 +33,17 @@ func (daseinBot *DaseinBot) Run(ctx context.Context) error {
 		gotelegram.WithDefaultHandler(daseinBot.answerHandler),
 	}
 	if daseinBot.cfg.CheckIfUserAllowed {
-		opts = append(opts, gotelegram.WithMiddlewares(daseinBot.isUserAllowed))
+		opts = append(opts, gotelegram.WithMiddlewares(daseinBot.isUpdateLegal, daseinBot.isUserAllowed))
 	}
 	bot, err := gotelegram.New(daseinBot.cfg.Token, opts...)
 	if err != nil {
 		return fmt.Errorf("failed to create Telegram bot: %w", err)
 	}
-	bot.RegisterHandler(gotelegram.HandlerTypeMessageText, "/askme", gotelegram.MatchTypeExact, daseinBot.askMeHandler)
+
+	bot.RegisterHandler(gotelegram.HandlerTypeMessageText, "/start", gotelegram.MatchTypeExact, daseinBot.startHandler)
+	bot.RegisterHandler(gotelegram.HandlerTypeMessageText, "/about", gotelegram.MatchTypeExact, daseinBot.aboutHandler)
+	bot.RegisterHandler(gotelegram.HandlerTypeMessageText, "/help", gotelegram.MatchTypeExact, daseinBot.helpHandler)
+	bot.RegisterHandler(gotelegram.HandlerTypeMessageText, "/begin", gotelegram.MatchTypeExact, daseinBot.beginHandler)
 
 	logger.Info("starting bot")
 	bot.Start(ctx)

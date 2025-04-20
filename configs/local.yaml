@@ -1,9 +1,0 @@
-check_if_user_allowed: true
-allowed_users: [162573173]
-questions:
-  - "Your Date of Birth?"
-  - "Your gender?"
-openai:
-  model: "fake-gpt-3.5"
-  dummy: true
-  developer_message: "You are a helpful assistant."
