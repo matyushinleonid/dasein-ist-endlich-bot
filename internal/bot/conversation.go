@@ -70,12 +70,19 @@ func (daseinBot *DaseinBot) answerHandler(ctx context.Context, bot *gotelegram.B
 		return
 	}
 
+	if err := utils.SendTypingAction(ctx, bot, chatID); err != nil {
+		logger.Error(err,
+			"unable to send typing action",
+			"chat_id", chatID,
+			"text", update.Message.Text,
+		)
+	}
+
 	summary := ""
 	for i, ans := range conv.Answers {
 		summary += fmt.Sprintf("%d) %s — %s\n", i+1, daseinBot.cfg.Questions[i], ans)
 	}
-
-	response, err := daseinBot.openAIClient.SendText(ctx, summary)
+	response, err := daseinBot.openAIClient.SendText(ctx, chatID, summary)
 	if err != nil {
 		logger.Error(err,
 			"unable to query OpenAI",

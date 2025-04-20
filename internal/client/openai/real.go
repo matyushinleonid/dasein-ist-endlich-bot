@@ -3,15 +3,18 @@ package openai
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/config"
 	"github.com/openai/openai-go"
 	"github.com/openai/openai-go/option"
+	"github.com/openai/openai-go/packages/param"
 )
 
 type RealClient struct {
-	client *openai.Client
-	model  string
+	client           *openai.Client
+	model            string
+	developerMessage string
 }
 
 func NewRealClient(cfg config.OpenAIConfig) *RealClient {
@@ -19,16 +22,19 @@ func NewRealClient(cfg config.OpenAIConfig) *RealClient {
 		option.WithAPIKey(cfg.APIKey),
 	)
 	return &RealClient{
-		client: &cli,
-		model:  cfg.Model,
+		client:           &cli,
+		model:            cfg.Model,
+		developerMessage: cfg.DeveloperMessage,
 	}
 }
 
-func (r *RealClient) SendText(ctx context.Context, prompt string) (string, error) {
+func (r *RealClient) SendText(ctx context.Context, userID int64, userMessage string) (string, error) {
 	params := openai.ChatCompletionNewParams{
 		Model: r.model,
+		User:  param.NewOpt(strconv.FormatInt(userID, 10)),
 		Messages: []openai.ChatCompletionMessageParamUnion{
-			openai.UserMessage(prompt),
+			openai.DeveloperMessage(r.developerMessage),
+			openai.UserMessage(userMessage),
 		},
 	}
 	resp, err := r.client.Chat.Completions.New(ctx, params)

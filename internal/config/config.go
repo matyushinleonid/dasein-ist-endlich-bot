@@ -16,9 +16,10 @@ type Config struct {
 }
 
 type OpenAIConfig struct {
-	APIKey string `mapstructure:"api_key"`
-	Model  string `mapstructure:"model"`
-	Dummy  bool   `mapstructure:"dummy"`
+	APIKey           string `mapstructure:"api_key"`
+	Model            string `mapstructure:"model"`
+	Dummy            bool   `mapstructure:"dummy"`
+	DeveloperMessage string `mapstructure:"developer_message"`
 }
 
 func NewConfig(path string) (*Config, error) {
