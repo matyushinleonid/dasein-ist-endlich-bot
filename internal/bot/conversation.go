@@ -16,6 +16,27 @@ type Conversation struct {
 	Answers []string
 }
 
+type openAIResponse struct {
+	DaysLeft    int64  `json:"days_left"`
+	Description string `json:"description"`
+}
+
+var openAIResponseSchema = map[string]interface{}{
+	"type": "object",
+	"properties": map[string]interface{}{
+		"days_left": map[string]interface{}{
+			"type":        "integer",
+			"description": "How many days the user have left in this world",
+		},
+		"description": map[string]interface{}{
+			"type":        "string",
+			"description": "How the amount of days left was calculated based on the user's answers",
+		},
+	},
+	"required":             []interface{}{"days_left", "description"},
+	"additionalProperties": false,
+}
+
 var (
 	convs   = make(map[int64]*Conversation)
 	convsMu sync.Mutex
@@ -74,7 +95,6 @@ func (daseinBot *DaseinBot) answerHandler(ctx context.Context, bot *gotelegram.B
 		logger.Error(err,
 			"unable to send typing action",
 			"chat_id", chatID,
-			"text", update.Message.Text,
 		)
 	}
 
@@ -82,16 +102,18 @@ func (daseinBot *DaseinBot) answerHandler(ctx context.Context, bot *gotelegram.B
 	for i, ans := range conv.Answers {
 		summary += fmt.Sprintf("%d) %s — %s\n", i+1, daseinBot.cfg.Questions[i], ans)
 	}
-	response, err := daseinBot.openAIClient.SendText(ctx, chatID, summary)
+
+	var response openAIResponse
+	err := daseinBot.openAIClient.SendJSONUnmarshal(ctx, chatID, summary, "openAIResponseSchema", openAIResponseSchema, &response)
 	if err != nil {
 		logger.Error(err,
 			"unable to query OpenAI",
 			"chat_id", chatID,
-			"text", update.Message.Text,
 		)
-		return
 	}
-	err = utils.SendMessage(ctx, bot, chatID, response)
+
+	responseText := fmt.Sprintf("У вас осталось %d дней в этом мире.\n\n%s", response.DaysLeft, response.Description)
+	err = utils.SendMessage(ctx, bot, chatID, responseText)
 
 	convsMu.Lock()
 	delete(convs, chatID)
