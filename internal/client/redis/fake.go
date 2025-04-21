@@ -2,43 +2,54 @@ package redis
 
 import (
 	"context"
-	"fmt"
+	"errors"
+	"reflect"
 	"sync"
 )
 
 type DummyClient struct {
 	mu      sync.RWMutex
-	storage map[int64]*Session
+	storage map[int64]interface{}
 }
 
 func NewDummyClient() *DummyClient {
-	return &DummyClient{
-		storage: make(map[int64]*Session),
-	}
+	return &DummyClient{storage: make(map[int64]interface{})}
 }
 
-func (c *DummyClient) Save(ctx context.Context, id int64, sess *Session) error {
+func (c *DummyClient) Save(ctx context.Context, key int64, value interface{}) error {
+	rv := reflect.ValueOf(value)
+	if rv.Kind() != reflect.Ptr || (rv.Elem().Kind() != reflect.Struct && rv.Elem().Kind() != reflect.Slice) {
+		return errors.New("value must be pointer to struct or slice")
+	}
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	copySess := *sess
-	c.storage[id] = &copySess
+	c.storage[key] = value
 	return nil
 }
 
-func (c *DummyClient) Load(ctx context.Context, id int64) (*Session, error) {
+func (c *DummyClient) Load(ctx context.Context, key int64, result interface{}) error {
 	c.mu.RLock()
-	defer c.mu.RUnlock()
-	sess, ok := c.storage[id]
+	v, ok := c.storage[key]
+	c.mu.RUnlock()
 	if !ok {
-		return nil, fmt.Errorf("session not found for id %d", id)
+		return errors.New("data not found for key")
 	}
-	copySess := *sess
-	return &copySess, nil
+	rv := reflect.ValueOf(result)
+	if rv.Kind() != reflect.Ptr || (rv.Elem().Kind() != reflect.Struct && rv.Elem().Kind() != reflect.Slice) {
+		return errors.New("result argument must be pointer to struct or slice")
+	}
+	val := reflect.ValueOf(v)
+	// stored value should be same pointer type
+	if val.Type() != rv.Type() {
+		return errors.New("stored value type does not match result type")
+	}
+	rv.Elem().Set(val.Elem())
+	return nil
 }
 
-func (c *DummyClient) Delete(ctx context.Context, id int64) error {
+func (c *DummyClient) Delete(ctx context.Context, key int64) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	delete(c.storage, id)
+	delete(c.storage, key)
 	return nil
 }

@@ -7,7 +7,7 @@ import (
 	gotelegram "github.com/go-telegram/bot"
 	"github.com/go-telegram/bot/models"
 	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/core"
-	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/record"
+	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/model"
 )
 
 func StartHandler(b *core.DaseinBot) gotelegram.HandlerFunc {
@@ -19,10 +19,10 @@ func StartHandler(b *core.DaseinBot) gotelegram.HandlerFunc {
 		}
 
 		chatID := update.Message.Chat.ID
-		var rec record.Record
+		var rec model.User
 		err := b.MongoClient.Get(ctx, chatID, &rec)
 		if err != nil {
-			rec = record.Record{ID: chatID, DaysLeft: 0, Calculated: false}
+			rec = model.User{ID: chatID, DaysLeft: 0, Calculated: false}
 			if _, err = b.MongoClient.Create(ctx, rec); err != nil {
 				logger.Error(err, "failed to create record")
 			}

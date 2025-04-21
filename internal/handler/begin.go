@@ -8,31 +8,9 @@ import (
 	gotelegram "github.com/go-telegram/bot"
 	"github.com/go-telegram/bot/models"
 
-	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/client/redis"
 	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/core"
-	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/record"
+	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/model"
 )
-
-var openAIResponseSchema = map[string]interface{}{
-	"type": "object",
-	"properties": map[string]interface{}{
-		"days_left": map[string]interface{}{
-			"type":        "integer",
-			"description": "How many days the user have left in this world",
-		},
-		"description": map[string]interface{}{
-			"type":        "string",
-			"description": "How the amount of days left was calculated based on the user's answers",
-		},
-	},
-	"required":             []interface{}{"days_left", "description"},
-	"additionalProperties": false,
-}
-
-type openAIResponse struct {
-	DaysLeft    int64  `json:"days_left"`
-	Description string `json:"description"`
-}
 
 func BeginHandler(b *core.DaseinBot) gotelegram.HandlerFunc {
 	return func(ctx context.Context, tgbot *gotelegram.Bot, update *models.Update) {
@@ -42,11 +20,11 @@ func BeginHandler(b *core.DaseinBot) gotelegram.HandlerFunc {
 
 		chatID := update.Message.Chat.ID
 
-		sess := &redis.Session{
+		sess := model.Session{
 			Stage:   0,
 			Answers: make([]string, len(b.Cfg.Questions)),
 		}
-		if err := b.RedisClient.Save(ctx, chatID, sess); err != nil {
+		if err := b.RedisClient.Save(ctx, chatID, &sess); err != nil {
 			logger.Error(err, "failed to save session to Redis")
 			return
 		}
@@ -66,7 +44,8 @@ func AnswerHandler(b *core.DaseinBot) gotelegram.HandlerFunc {
 
 		chatID := update.Message.Chat.ID
 
-		sess, err := b.RedisClient.Load(ctx, chatID)
+		var sess model.Session
+		err := b.RedisClient.Load(ctx, chatID, &sess)
 		if err != nil {
 
 			EchoHandler(b)(ctx, tgbot, update)
@@ -77,7 +56,7 @@ func AnswerHandler(b *core.DaseinBot) gotelegram.HandlerFunc {
 		sess.Stage++
 
 		if sess.Stage < len(b.Cfg.Questions) {
-			if err = b.RedisClient.Save(ctx, chatID, sess); err != nil {
+			if err = b.RedisClient.Save(ctx, chatID, &sess); err != nil {
 				logger.Error(err, "failed to update session in Redis")
 			}
 			nextQ := b.Cfg.Questions[sess.Stage]
@@ -96,16 +75,16 @@ func AnswerHandler(b *core.DaseinBot) gotelegram.HandlerFunc {
 			summary += fmt.Sprintf("%d) %s — %s\n", i+1, b.Cfg.Questions[i], ans)
 		}
 
-		var response openAIResponse
+		var response model.OpenAIResponse
 		if err = b.OpenAIClient.SendJSONUnmarshal(
 			ctx, chatID, summary,
-			"openAIResponseSchema", openAIResponseSchema,
+			"OpenAIResponseSchema", model.OpenAIResponseSchema,
 			&response,
 		); err != nil {
 			logger.Error(err, "unable to query OpenAI")
 		}
 
-		upd := record.Record{DaysLeft: response.DaysLeft, Calculated: true}
+		upd := model.User{DaysLeft: response.DaysLeft, Calculated: true}
 		if _, err := b.MongoClient.Update(ctx, chatID, upd); err != nil {
 			logger.Error(err, "failed to update record in MongoDB")
 		}
