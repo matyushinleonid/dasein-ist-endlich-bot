@@ -11,6 +11,7 @@ services:
       - ./configs/dummy.yaml:/configs/local.yaml
     depends_on:
       - mongodb
+      - redis
     networks:
       - dasein_ist_endlich_network
 
@@ -23,6 +24,14 @@ services:
     networks:
       - dasein_ist_endlich_network
 
+  redis:
+    image: redis:7.4.2
+    container_name: redis
+    restart: always
+    ports:
+      - "6379:6379"
+    networks:
+      - dasein_ist_endlich_network
 
 networks:
   dasein_ist_endlich_network:
