@@ -10,7 +10,6 @@ import (
 	"github.com/go-telegram/bot/models"
 	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/core"
 	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/record"
-	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/utils"
 )
 
 type Conversation struct {
@@ -56,7 +55,7 @@ func BeginHandler(b *core.DaseinBot) gotelegram.HandlerFunc {
 		}
 		convsMu.Unlock()
 
-		err := utils.SendMessage(ctx, tgbot, chatID, b.Cfg.Questions[0])
+		err := b.TelegramClient.SendMessage(ctx, tgbot, chatID, b.Cfg.Questions[0])
 		if err != nil {
 			logger.Error(err, "unable to send message")
 		}
@@ -81,14 +80,14 @@ func AnswerHandler(b *core.DaseinBot) gotelegram.HandlerFunc {
 		conv.Stage++
 
 		if conv.Stage < len(b.Cfg.Questions) {
-			err := utils.SendMessage(ctx, tgbot, chatID, b.Cfg.Questions[conv.Stage])
+			err := b.TelegramClient.SendMessage(ctx, tgbot, chatID, b.Cfg.Questions[conv.Stage])
 			if err != nil {
 				logger.Error(err, "unable to send message")
 			}
 			return
 		}
 
-		if err := utils.SendTypingAction(ctx, tgbot, chatID); err != nil {
+		if err := b.TelegramClient.SendTypingAction(ctx, tgbot, chatID); err != nil {
 			logger.Error(err, "unable to send typing action")
 		}
 
@@ -109,7 +108,7 @@ func AnswerHandler(b *core.DaseinBot) gotelegram.HandlerFunc {
 		}
 
 		responseText := fmt.Sprintf("У вас осталось %d дней в этом мире.\n\n%s", response.DaysLeft, response.Description)
-		err = utils.SendMessage(ctx, tgbot, chatID, responseText)
+		err = b.TelegramClient.SendMessage(ctx, tgbot, chatID, responseText)
 
 		convsMu.Lock()
 		delete(convs, chatID)
