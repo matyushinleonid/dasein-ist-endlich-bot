@@ -11,6 +11,7 @@ type Config struct {
 	DaseinBot DaseinBotConfig `mapstructure:"dasein_bot"`
 	OpenAI    OpenAIConfig    `mapstructure:"openai"`
 	MongoDB   MongoDBConfig   `mapstructure:"mongodb"`
+	Redis     RedisConfig     `mapstructure:"redis"`
 }
 
 type DaseinBotConfig struct {
@@ -38,6 +39,15 @@ type MongoDBConfig struct {
 	Database       string        `mapstructure:"database"`
 	Collection     string        `mapstructure:"collection"`
 	ConnectTimeout time.Duration `mapstructure:"connect_timeout"`
+}
+
+type RedisConfig struct {
+	Host     string        `mapstructure:"host"`
+	Port     int           `mapstructure:"port"`
+	Username string        `mapstructure:"username"`
+	Password string        `mapstructure:"password"`
+	DB       int           `mapstructure:"db"`
+	TTL      time.Duration `mapstructure:"ttl"`
 }
 
 func NewConfig(path string) (*Config, error) {

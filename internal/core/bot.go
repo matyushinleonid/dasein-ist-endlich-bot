@@ -3,6 +3,7 @@ package core
 import (
 	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/client/mongo"
 	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/client/openai"
+	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/client/redis"
 	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/client/telegram"
 	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/config"
 )
@@ -12,10 +13,11 @@ type DaseinBot struct {
 	OpenAIClient   openai.Client
 	MongoClient    mongo.Client
 	TelegramClient telegram.Client
+	RedisClient    redis.Client
 }
 
 func New(cfg *config.Config) *DaseinBot {
-	mcli, err := mongo.NewClient(cfg.MongoDB)
+	mcli, err := mongo.NewRealClient(cfg.MongoDB)
 	if err != nil {
 		panic("failed to init mongo: " + err.Error())
 	}
@@ -24,5 +26,6 @@ func New(cfg *config.Config) *DaseinBot {
 		OpenAIClient:   openai.NewClient(cfg.OpenAI),
 		MongoClient:    mcli,
 		TelegramClient: telegram.NewRealClient(),
+		RedisClient:    redis.NewRealClient(cfg.Redis),
 	}
 }

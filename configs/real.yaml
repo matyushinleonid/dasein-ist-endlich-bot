@@ -28,3 +28,8 @@ mongodb:
   database: "dasein_bot"
   collection: "dasein_bot"
   connect_timeout: 5
+redis:
+  host: "redis"
+  port: 6379
+  db: 0
+  ttl: 60s

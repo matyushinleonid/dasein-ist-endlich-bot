@@ -8,22 +8,25 @@ import (
 )
 
 type DummyClient struct {
-	sleep time.Duration
+	Sleep          time.Duration
+	SendJSONOutput string
 }
 
-func NewDummyClient() *DummyClient {
-	return &DummyClient{
-		sleep: 2 * time.Second,
+func NewDummyClient(opts ...time.Duration) *DummyClient {
+	sleep := 2 * time.Second
+	if len(opts) > 0 {
+		sleep = opts[0]
 	}
+	return &DummyClient{Sleep: sleep}
 }
 
 func (d *DummyClient) SendText(ctx context.Context, userID int64, userMessage string) (string, error) {
-	time.Sleep(d.sleep)
+	time.Sleep(d.Sleep)
 	return fmt.Sprintf("Dummy response to: \n %s", userMessage), nil
 }
 
 func (d *DummyClient) SendJSON(ctx context.Context, userID int64, userMessage, schemaName string, schema map[string]interface{}) (string, error) {
-	time.Sleep(d.sleep)
+	time.Sleep(d.Sleep)
 	fake := map[string]interface{}{
 		"schemaName":    schemaName,
 		"originalQuery": userMessage,
@@ -33,6 +36,9 @@ func (d *DummyClient) SendJSON(ctx context.Context, userID int64, userMessage, s
 	b, err := json.MarshalIndent(fake, "", "  ")
 	if err != nil {
 		return "", err
+	}
+	if d.SendJSONOutput != "" {
+		return d.SendJSONOutput, nil
 	}
 	return string(b), nil
 }
