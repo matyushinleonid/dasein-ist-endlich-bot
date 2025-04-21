@@ -8,12 +8,12 @@ import (
 	"github.com/go-logr/logr"
 	gotelegram "github.com/go-telegram/bot"
 	"github.com/go-telegram/bot/models"
-	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/bot"
+	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/core"
 	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/record"
 	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/utils"
 )
 
-func HelpHandler(b *bot.DaseinBot) gotelegram.HandlerFunc {
+func HelpHandler(b *core.DaseinBot) gotelegram.HandlerFunc {
 	return func(ctx context.Context, tgbot *gotelegram.Bot, update *models.Update) {
 		logger := logr.FromContextOrDiscard(ctx).WithName("helpHandler").WithValues("chat_id", update.Message.Chat.ID)
 

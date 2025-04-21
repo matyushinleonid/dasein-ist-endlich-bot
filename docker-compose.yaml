@@ -4,7 +4,7 @@ services:
       dockerfile: Dockerfile
       context: .
     image: matyushinleonid/dasein-ist-endlich-bot:latest
-    command: main-bot --config-path /configs/local.yaml
+    command: listener --config-path /configs/local.yaml
     env_file:
       - .env
     volumes:

@@ -8,7 +8,7 @@ import (
 	"github.com/go-logr/logr"
 	gotelegram "github.com/go-telegram/bot"
 	"github.com/go-telegram/bot/models"
-	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/bot"
+	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/core"
 	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/record"
 	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/utils"
 )
@@ -44,7 +44,7 @@ var (
 	convsMu sync.Mutex
 )
 
-func BeginHandler(b *bot.DaseinBot) gotelegram.HandlerFunc {
+func BeginHandler(b *core.DaseinBot) gotelegram.HandlerFunc {
 	return func(ctx context.Context, tgbot *gotelegram.Bot, update *models.Update) {
 		logger := logr.FromContextOrDiscard(ctx).WithName("beginHandler").WithValues("chat_id", update.Message.Chat.ID)
 
@@ -63,7 +63,7 @@ func BeginHandler(b *bot.DaseinBot) gotelegram.HandlerFunc {
 	}
 }
 
-func AnswerHandler(b *bot.DaseinBot) gotelegram.HandlerFunc {
+func AnswerHandler(b *core.DaseinBot) gotelegram.HandlerFunc {
 	return func(ctx context.Context, tgbot *gotelegram.Bot, update *models.Update) {
 		logger := logr.FromContextOrDiscard(ctx).WithName("answerHandler").WithValues("chat_id", update.Message.Chat.ID)
 

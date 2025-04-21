@@ -7,7 +7,8 @@ import (
 
 	"github.com/go-logr/logr"
 	"github.com/go-logr/stdr"
-	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/bot/primary"
+	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/core"
+	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/listener"
 	"github.com/spf13/cobra"
 
 	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/config"
@@ -18,7 +19,7 @@ var (
 		Use: "dasein-ist-endlich-bot",
 	}
 	botCmd = &cobra.Command{
-		Use: "main-bot",
+		Use: "listener",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := context.Background()
 
@@ -33,7 +34,8 @@ var (
 			}
 			logger.Info("configuration loaded", "path", configPath)
 
-			b := primary.New(conf)
+			daseinBot := core.New(conf)
+			b := listener.New(daseinBot)
 			return b.Run(ctx)
 		},
 	}
