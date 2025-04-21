@@ -8,6 +8,7 @@ import (
 	"github.com/go-logr/stdr"
 	gotelegram "github.com/go-telegram/bot"
 	"github.com/go-telegram/bot/models"
+	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/model"
 
 	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/client/mongo"
 	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/client/openai"
@@ -62,7 +63,7 @@ func TestAnswerHandler_FullFlow(t *testing.T) {
 	bot := makeBot()
 	ctx := logr.NewContext(context.Background(), stdr.New(nil))
 	rs := bot.RedisClient.(*redis.DummyClient)
-	rs.Save(ctx, 20, &redis.Session{Stage: 0, Answers: make([]string, 2)})
+	rs.Save(ctx, 20, &model.Session{Stage: 0, Answers: make([]string, 2)})
 
 	handler := AnswerHandler(bot)
 	upd1 := &models.Update{Message: &models.Message{Chat: models.Chat{ID: 20}, Text: "a1"}}

@@ -5,16 +5,16 @@ import (
 	"errors"
 	"sync"
 
-	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/record"
+	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/model"
 )
 
 type DummyClient struct {
 	mu      sync.RWMutex
-	storage map[int64]record.Record
+	storage map[int64]model.User
 }
 
 func NewDummyClient() *DummyClient {
-	return &DummyClient{storage: make(map[int64]record.Record)}
+	return &DummyClient{storage: make(map[int64]model.User)}
 }
 
 func (c *DummyClient) Get(ctx context.Context, key int64, result interface{}) error {
@@ -24,18 +24,18 @@ func (c *DummyClient) Get(ctx context.Context, key int64, result interface{}) er
 	if !ok {
 		return errors.New("document not found")
 	}
-	r, ok := result.(*record.Record)
+	r, ok := result.(*model.User)
 	if !ok {
-		return errors.New("result argument must be *record.Record")
+		return errors.New("result argument must be *record.User")
 	}
 	*r = rec
 	return nil
 }
 
 func (c *DummyClient) Create(ctx context.Context, doc interface{}) (int64, error) {
-	r, ok := doc.(record.Record)
+	r, ok := doc.(model.User)
 	if !ok {
-		return 0, errors.New("doc must be record.Record")
+		return 0, errors.New("doc must be record.User")
 	}
 	c.mu.Lock()
 	c.storage[r.ID] = r
@@ -44,9 +44,9 @@ func (c *DummyClient) Create(ctx context.Context, doc interface{}) (int64, error
 }
 
 func (c *DummyClient) Update(ctx context.Context, key int64, update interface{}) (int64, error) {
-	upd, ok := update.(record.Record)
+	upd, ok := update.(model.User)
 	if !ok {
-		return 0, errors.New("update must be record.Record")
+		return 0, errors.New("update must be record.User")
 	}
 	c.mu.Lock()
 	orig, exists := c.storage[key]

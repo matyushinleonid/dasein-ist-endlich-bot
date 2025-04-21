@@ -4,20 +4,22 @@ import (
 	"context"
 	"fmt"
 	"sync"
+
+	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/model"
 )
 
 type DummyClient struct {
 	mu      sync.RWMutex
-	storage map[int64]*Session
+	storage map[int64]*model.Session
 }
 
 func NewDummyClient() *DummyClient {
 	return &DummyClient{
-		storage: make(map[int64]*Session),
+		storage: make(map[int64]*model.Session),
 	}
 }
 
-func (c *DummyClient) Save(ctx context.Context, id int64, sess *Session) error {
+func (c *DummyClient) Save(ctx context.Context, id int64, sess *model.Session) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	copySess := *sess
@@ -25,7 +27,7 @@ func (c *DummyClient) Save(ctx context.Context, id int64, sess *Session) error {
 	return nil
 }
 
-func (c *DummyClient) Load(ctx context.Context, id int64) (*Session, error) {
+func (c *DummyClient) Load(ctx context.Context, id int64) (*model.Session, error) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 	sess, ok := c.storage[id]

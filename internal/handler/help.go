@@ -9,7 +9,7 @@ import (
 	gotelegram "github.com/go-telegram/bot"
 	"github.com/go-telegram/bot/models"
 	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/core"
-	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/record"
+	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/model"
 )
 
 func HelpHandler(b *core.DaseinBot) gotelegram.HandlerFunc {
@@ -19,7 +19,7 @@ func HelpHandler(b *core.DaseinBot) gotelegram.HandlerFunc {
 		msg := b.Cfg.Help
 		if b.Cfg.Debug {
 			chatID := update.Message.Chat.ID
-			var rec record.Record
+			var rec model.User
 			err := b.MongoClient.Get(ctx, chatID, &rec)
 			if err != nil {
 				logger.Error(err, "failed to get record")

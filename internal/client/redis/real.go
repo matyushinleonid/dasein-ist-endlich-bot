@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/config"
+	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/model"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -30,7 +31,7 @@ func (c *RealClient) key(id int64) string {
 	return fmt.Sprintf("sess:%d", id)
 }
 
-func (c *RealClient) Save(ctx context.Context, id int64, sess *Session) error {
+func (c *RealClient) Save(ctx context.Context, id int64, sess *model.Session) error {
 	data, err := json.Marshal(sess)
 	if err != nil {
 		return fmt.Errorf("session.Marshal: %w", err)
@@ -41,7 +42,7 @@ func (c *RealClient) Save(ctx context.Context, id int64, sess *Session) error {
 	return nil
 }
 
-func (c *RealClient) Load(ctx context.Context, id int64) (*Session, error) {
+func (c *RealClient) Load(ctx context.Context, id int64) (*model.Session, error) {
 	data, err := c.rdb.Get(ctx, c.key(id)).Bytes()
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
@@ -49,7 +50,7 @@ func (c *RealClient) Load(ctx context.Context, id int64) (*Session, error) {
 		}
 		return nil, fmt.Errorf("redis.Get: %w", err)
 	}
-	var sess Session
+	var sess model.Session
 	if err := json.Unmarshal(data, &sess); err != nil {
 		return nil, fmt.Errorf("session.Unmarshal: %w", err)
 	}
