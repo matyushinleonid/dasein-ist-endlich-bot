@@ -6,11 +6,11 @@ import (
 	"github.com/go-logr/logr"
 	gotelegram "github.com/go-telegram/bot"
 	"github.com/go-telegram/bot/models"
-	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/bot"
+	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/core"
 	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/utils"
 )
 
-func IsUserAllowed(b *bot.DaseinBot) gotelegram.Middleware {
+func IsUserAllowed(b *core.DaseinBot) gotelegram.Middleware {
 	return func(next gotelegram.HandlerFunc) gotelegram.HandlerFunc {
 		return func(ctx context.Context, tgbot *gotelegram.Bot, update *models.Update) {
 			logger := logr.FromContextOrDiscard(ctx).WithName("isUserAllowed").WithValues("chat_id", update.Message.Chat.ID, "user_id", update.Message.From.ID)
