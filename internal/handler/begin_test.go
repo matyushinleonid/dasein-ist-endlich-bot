@@ -50,7 +50,8 @@ func TestBeginHandler(t *testing.T) {
 	}
 
 	rs := bot.RedisClient.(*redis.DummyClient)
-	sess, err := rs.Load(ctx, 10)
+	var sess model.Session
+	err := rs.Load(ctx, 10, &sess)
 	if err != nil {
 		t.Fatalf("expected session, got err %v", err)
 	}
@@ -63,7 +64,10 @@ func TestAnswerHandler_FullFlow(t *testing.T) {
 	bot := makeBot()
 	ctx := logr.NewContext(context.Background(), stdr.New(nil))
 	rs := bot.RedisClient.(*redis.DummyClient)
-	rs.Save(ctx, 20, &model.Session{Stage: 0, Answers: make([]string, 2)})
+	err := rs.Save(ctx, 20, &model.Session{Stage: 0, Answers: make([]string, 2)})
+	if err != nil {
+		t.Fatalf("failed to save session: %v", err)
+	}
 
 	handler := AnswerHandler(bot)
 	upd1 := &models.Update{Message: &models.Message{Chat: models.Chat{ID: 20}, Text: "a1"}}
@@ -74,7 +78,11 @@ func TestAnswerHandler_FullFlow(t *testing.T) {
 		t.Fatalf("expected next q2, got %v", d.SentMessages)
 	}
 
-	sess, _ := rs.Load(ctx, 20)
+	var sess model.Session
+	err = rs.Load(ctx, 20, &sess)
+	if err != nil {
+		t.Fatalf("got err %v", err)
+	}
 	if sess.Stage != 1 || sess.Answers[0] != "a1" {
 		t.Errorf("session not updated: %+v", sess)
 	}
@@ -90,7 +98,7 @@ func TestAnswerHandler_FullFlow(t *testing.T) {
 		t.Errorf("unexpected final text: %q", d.SentMessages[1].Text)
 	}
 
-	if _, err := rs.Load(ctx, 20); err == nil {
+	if err = rs.Load(ctx, 20, &sess); err == nil {
 		t.Error("expected session deleted, still exists")
 	}
 }

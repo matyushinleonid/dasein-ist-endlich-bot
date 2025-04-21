@@ -20,11 +20,11 @@ func BeginHandler(b *core.DaseinBot) gotelegram.HandlerFunc {
 
 		chatID := update.Message.Chat.ID
 
-		sess := &model.Session{
+		sess := model.Session{
 			Stage:   0,
 			Answers: make([]string, len(b.Cfg.Questions)),
 		}
-		if err := b.RedisClient.Save(ctx, chatID, sess); err != nil {
+		if err := b.RedisClient.Save(ctx, chatID, &sess); err != nil {
 			logger.Error(err, "failed to save session to Redis")
 			return
 		}
@@ -44,7 +44,8 @@ func AnswerHandler(b *core.DaseinBot) gotelegram.HandlerFunc {
 
 		chatID := update.Message.Chat.ID
 
-		sess, err := b.RedisClient.Load(ctx, chatID)
+		var sess model.Session
+		err := b.RedisClient.Load(ctx, chatID, &sess)
 		if err != nil {
 
 			EchoHandler(b)(ctx, tgbot, update)
@@ -55,7 +56,7 @@ func AnswerHandler(b *core.DaseinBot) gotelegram.HandlerFunc {
 		sess.Stage++
 
 		if sess.Stage < len(b.Cfg.Questions) {
-			if err = b.RedisClient.Save(ctx, chatID, sess); err != nil {
+			if err = b.RedisClient.Save(ctx, chatID, &sess); err != nil {
 				logger.Error(err, "failed to update session in Redis")
 			}
 			nextQ := b.Cfg.Questions[sess.Stage]

@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/config"
-	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/model"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -31,34 +30,33 @@ func (c *RealClient) key(id int64) string {
 	return fmt.Sprintf("sess:%d", id)
 }
 
-func (c *RealClient) Save(ctx context.Context, id int64, sess *model.Session) error {
-	data, err := json.Marshal(sess)
+func (c *RealClient) Save(ctx context.Context, key int64, value interface{}) error {
+	data, err := json.Marshal(value)
 	if err != nil {
-		return fmt.Errorf("session.Marshal: %w", err)
+		return fmt.Errorf("json.Marshal: %w", err)
 	}
-	if err := c.rdb.Set(ctx, c.key(id), data, c.ttl).Err(); err != nil {
+	if err := c.rdb.Set(ctx, c.key(key), data, c.ttl).Err(); err != nil {
 		return fmt.Errorf("redis.Set: %w", err)
 	}
 	return nil
 }
 
-func (c *RealClient) Load(ctx context.Context, id int64) (*model.Session, error) {
-	data, err := c.rdb.Get(ctx, c.key(id)).Bytes()
+func (c *RealClient) Load(ctx context.Context, key int64, result interface{}) error {
+	data, err := c.rdb.Get(ctx, c.key(key)).Bytes()
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
-			return nil, fmt.Errorf("session not found for id %d", id)
+			return fmt.Errorf("data not found for key %d", key)
 		}
-		return nil, fmt.Errorf("redis.Get: %w", err)
+		return fmt.Errorf("redis.Get: %w", err)
 	}
-	var sess model.Session
-	if err := json.Unmarshal(data, &sess); err != nil {
-		return nil, fmt.Errorf("session.Unmarshal: %w", err)
+	if err := json.Unmarshal(data, result); err != nil {
+		return fmt.Errorf("json.Unmarshal: %w", err)
 	}
-	return &sess, nil
+	return nil
 }
 
-func (c *RealClient) Delete(ctx context.Context, id int64) error {
-	if err := c.rdb.Del(ctx, c.key(id)).Err(); err != nil {
+func (c *RealClient) Delete(ctx context.Context, key int64) error {
+	if err := c.rdb.Del(ctx, c.key(key)).Err(); err != nil {
 		return fmt.Errorf("redis.Del: %w", err)
 	}
 	return nil
