@@ -7,7 +7,6 @@ import (
 	gotelegram "github.com/go-telegram/bot"
 	"github.com/go-telegram/bot/models"
 	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/core"
-	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/utils"
 )
 
 func EchoHandler(b *core.DaseinBot) gotelegram.HandlerFunc {
@@ -17,7 +16,7 @@ func EchoHandler(b *core.DaseinBot) gotelegram.HandlerFunc {
 		if update.Message == nil {
 			return
 		}
-		if err := utils.SendMessage(ctx, tgbot, update.Message.Chat.ID, update.Message.Text); err != nil {
+		if err := b.TelegramClient.SendMessage(ctx, tgbot, update.Message.Chat.ID, update.Message.Text); err != nil {
 			logger.Error(err, "unable to send message")
 		}
 	}

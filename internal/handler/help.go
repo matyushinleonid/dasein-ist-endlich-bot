@@ -10,7 +10,6 @@ import (
 	"github.com/go-telegram/bot/models"
 	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/core"
 	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/record"
-	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/utils"
 )
 
 func HelpHandler(b *core.DaseinBot) gotelegram.HandlerFunc {
@@ -32,7 +31,7 @@ func HelpHandler(b *core.DaseinBot) gotelegram.HandlerFunc {
 			msg += fmt.Sprintf("\n\nDebug info:\n\tRecord:\n%s\n", prettyJSON)
 		}
 
-		err := utils.SendMessage(ctx, tgbot, update.Message.Chat.ID, msg)
+		err := b.TelegramClient.SendMessage(ctx, tgbot, update.Message.Chat.ID, msg)
 		if err != nil {
 			logger.Error(err, "unable to send message")
 		}

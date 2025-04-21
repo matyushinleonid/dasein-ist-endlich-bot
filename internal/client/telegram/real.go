@@ -1,4 +1,4 @@
-package utils
+package telegram
 
 import (
 	"context"
@@ -8,7 +8,13 @@ import (
 	"github.com/go-telegram/bot/models"
 )
 
-func SendMessage(ctx context.Context, tgbot *gotelegram.Bot, chatID int64, text string) error {
+type RealClient struct{}
+
+func NewRealClient() *RealClient {
+	return &RealClient{}
+}
+
+func (c *RealClient) SendMessage(ctx context.Context, tgbot *gotelegram.Bot, chatID int64, text string) error {
 	params := gotelegram.SendMessageParams{
 		ChatID: chatID,
 		Text:   text,
@@ -19,7 +25,7 @@ func SendMessage(ctx context.Context, tgbot *gotelegram.Bot, chatID int64, text 
 	return nil
 }
 
-func SendTypingAction(ctx context.Context, tgbot *gotelegram.Bot, chatID int64) error {
+func (c *RealClient) SendTypingAction(ctx context.Context, tgbot *gotelegram.Bot, chatID int64) error {
 	params := gotelegram.SendChatActionParams{
 		ChatID: chatID,
 		Action: models.ChatActionTyping,

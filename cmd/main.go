@@ -7,11 +7,10 @@ import (
 
 	"github.com/go-logr/logr"
 	"github.com/go-logr/stdr"
+	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/config"
 	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/core"
 	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/listener"
 	"github.com/spf13/cobra"
-
-	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/config"
 )
 
 var (
