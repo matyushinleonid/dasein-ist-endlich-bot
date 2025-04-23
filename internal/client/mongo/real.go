@@ -91,3 +91,31 @@ func (r *RealClient) Delete(ctx context.Context, key int64) (int64, error) {
 	}
 	return res.DeletedCount, nil
 }
+
+func (r *RealClient) FindAll(ctx context.Context) (Cursor, error) {
+	cursor, err := r.collection.Find(ctx, bson.M{}, options.Find().SetBatchSize(100))
+	if err != nil {
+		return nil, fmt.Errorf("mongo FindAll failed: %w", err)
+	}
+	return &realCursor{cursor: cursor}, nil
+}
+
+type realCursor struct {
+	cursor *mongo.Cursor
+}
+
+func (c *realCursor) Next(ctx context.Context) bool {
+	return c.cursor.Next(ctx)
+}
+
+func (c *realCursor) Decode(v interface{}) error {
+	return c.cursor.Decode(v)
+}
+
+func (c *realCursor) Err() error {
+	return c.cursor.Err()
+}
+
+func (c *realCursor) Close(ctx context.Context) error {
+	return c.cursor.Close(ctx)
+}

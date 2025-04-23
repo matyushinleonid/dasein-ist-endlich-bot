@@ -39,7 +39,6 @@ func (c *DummyClient) Load(ctx context.Context, key int64, result interface{}) e
 		return errors.New("result argument must be pointer to struct or slice")
 	}
 	val := reflect.ValueOf(v)
-	// stored value should be same pointer type
 	if val.Type() != rv.Type() {
 		return errors.New("stored value type does not match result type")
 	}

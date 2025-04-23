@@ -22,7 +22,7 @@ func StartHandler(b *core.DaseinBot) gotelegram.HandlerFunc {
 		var rec model.User
 		err := b.MongoClient.Get(ctx, chatID, &rec)
 		if err != nil {
-			rec = model.User{ID: chatID, DaysLeft: 0, Calculated: false}
+			rec = model.User{ID: chatID}
 			if _, err = b.MongoClient.Create(ctx, rec); err != nil {
 				logger.Error(err, "failed to create record")
 			}

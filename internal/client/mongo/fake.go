@@ -69,3 +69,53 @@ func (c *DummyClient) Delete(ctx context.Context, key int64) (int64, error) {
 	}
 	return 0, nil
 }
+
+func (c *DummyClient) FindAll(ctx context.Context) (Cursor, error) {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+
+	data := make([]interface{}, 0, len(c.storage))
+	for _, v := range c.storage {
+		data = append(data, v)
+	}
+	return &dummyCursor{data: data}, nil
+}
+
+var ErrBadDecodeTarget = errors.New("decode target must be pointer to struct")
+
+type dummyCursor struct {
+	data []interface{}
+	idx  int
+	err  error
+}
+
+func (c *dummyCursor) Next(ctx context.Context) bool {
+	if c.err != nil {
+		return false
+	}
+	if c.idx < len(c.data) {
+		return true
+	}
+	return false
+}
+
+func (c *dummyCursor) Decode(v interface{}) error {
+	if c.idx >= len(c.data) {
+		return c.err
+	}
+	rv := reflect.ValueOf(v)
+	if rv.Kind() != reflect.Ptr || rv.Elem().Kind() != reflect.Struct {
+		return ErrBadDecodeTarget
+	}
+	rv.Elem().Set(reflect.ValueOf(c.data[c.idx]))
+	c.idx++
+	return nil
+}
+
+func (c *dummyCursor) Err() error {
+	return c.err
+}
+
+func (c *dummyCursor) Close(ctx context.Context) error {
+	return nil
+}
