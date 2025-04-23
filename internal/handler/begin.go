@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/go-logr/logr"
 	gotelegram "github.com/go-telegram/bot"
@@ -84,8 +85,13 @@ func AnswerHandler(b *core.DaseinBot) gotelegram.HandlerFunc {
 			logger.Error(err, "unable to query OpenAI")
 		}
 
-		upd := model.User{DaysLeft: response.DaysLeft, Calculated: true}
-		if _, err := b.MongoClient.Update(ctx, chatID, upd); err != nil {
+		upd := model.User{
+			DeathTime:             model.DeathTime(time.Now(), response.DaysLeft),
+			LastNotification:      time.Time{},
+			Calculated:            true,
+			NotificationFrequency: model.Daily,
+		}
+		if _, err = b.MongoClient.Update(ctx, chatID, upd); err != nil {
 			logger.Error(err, "failed to update record in MongoDB")
 		}
 

@@ -17,6 +17,6 @@ var OpenAIResponseSchema = map[string]interface{}{
 }
 
 type OpenAIResponse struct {
-	DaysLeft    int64  `json:"days_left"`
+	DaysLeft    int    `json:"days_left"`
 	Description string `json:"description"`
 }
