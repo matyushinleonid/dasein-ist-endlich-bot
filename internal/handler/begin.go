@@ -85,14 +85,17 @@ func AnswerHandler(b *core.DaseinBot) gotelegram.HandlerFunc {
 			logger.Error(err, "unable to query OpenAI")
 		}
 
-		upd := model.User{
-			DeathTime:             model.DeathTime(time.Now(), response.DaysLeft),
-			LastNotification:      time.Time{},
-			Calculated:            true,
-			NotificationFrequency: model.Daily,
+		user, err := b.UserRepository.Get(ctx, chatID)
+		if err != nil {
+			logger.Error(err, "unable to get user from DB")
+			return
 		}
-		if _, err = b.MongoClient.Update(ctx, chatID, upd); err != nil {
-			logger.Error(err, "failed to update record in MongoDB")
+		user.DeathTime = model.DeathTime(time.Now(), response.DaysLeft)
+		user.LastNotification = time.Time{}
+		user.Calculated = true
+		user.NotificationFrequency = model.Daily
+		if err = b.UserRepository.Update(ctx, user); err != nil {
+			logger.Error(err, "unable to update user in DB")
 		}
 
 		respText := fmt.Sprintf(

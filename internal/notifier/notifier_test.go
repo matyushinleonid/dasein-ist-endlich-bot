@@ -6,6 +6,7 @@ import (
 	"time"
 
 	gotelegram "github.com/go-telegram/bot"
+	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/adapter/repository"
 	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/client/mongo"
 	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/client/telegram"
 	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/core"
@@ -41,7 +42,7 @@ func TestNotifier_NotifyAll(t *testing.T) {
 	tc := telegram.NewDummyClient()
 
 	botCore := &core.DaseinBot{
-		MongoClient:    mc,
+		UserRepository: repository.NewUserRepository(mc),
 		TelegramClient: tc,
 	}
 	notifier := New(botCore)

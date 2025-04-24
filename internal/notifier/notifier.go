@@ -10,8 +10,6 @@ import (
 	"github.com/go-logr/logr"
 	gotelegram "github.com/go-telegram/bot"
 	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/core"
-	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/model"
-	"go.mongodb.org/mongo-driver/bson"
 )
 
 type Notifier struct {
@@ -23,24 +21,13 @@ func New(daseinBot *core.DaseinBot) *Notifier {
 }
 
 func (n *Notifier) NotifyAll(ctx context.Context, tgbot *gotelegram.Bot) error {
-	cur, err := n.MongoClient.FindAll(ctx)
+	users, err := n.UserRepository.List(ctx)
 	if err != nil {
 		return fmt.Errorf("FindAll failed: %w", err)
 	}
-	defer func() {
-		if err := cur.Close(ctx); err != nil {
-			logr.FromContextOrDiscard(ctx).
-				Error(err, "close cursor failed")
-		}
-	}()
 
 	now := time.Now()
-	for cur.Next(ctx) {
-		var u model.User
-		if err := cur.Decode(&u); err != nil {
-			return fmt.Errorf("decode user: %w", err)
-		}
-
+	for _, u := range users {
 		ok, err := ShouldNotify(u, now)
 		if err != nil {
 			logr.FromContextOrDiscard(ctx).
@@ -58,15 +45,13 @@ func (n *Notifier) NotifyAll(ctx context.Context, tgbot *gotelegram.Bot) error {
 			continue
 		}
 
-		if _, err := n.MongoClient.Update(ctx, u.ID, bson.M{"last_notification": now}); err != nil {
+		u.LastNotification = now
+		if err := n.UserRepository.Update(ctx, &u); err != nil {
 			logr.FromContextOrDiscard(ctx).
 				Error(err, "update user failed", "user_id", u.ID)
 		}
 	}
 
-	if err := cur.Err(); err != nil {
-		return fmt.Errorf("cursor error: %w", err)
-	}
 	return nil
 }
 

@@ -31,3 +31,13 @@ type User struct {
 func DeathTime(currentTime time.Time, daysLeft int) time.Time {
 	return currentTime.AddDate(0, 0, daysLeft)
 }
+
+func NewUser(id int64) *User {
+	return &User{
+		ID:                    id,
+		Calculated:            false,
+		DeathTime:             time.Time{},
+		LastNotification:      time.Time{},
+		NotificationFrequency: Daily,
+	}
+}

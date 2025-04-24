@@ -5,6 +5,8 @@ import (
 	"testing"
 
 	"github.com/go-telegram/bot/models"
+	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/adapter/repository"
+	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/client/mongo"
 	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/client/telegram"
 	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/config"
 	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/core"
@@ -44,6 +46,7 @@ func TestIsUserAllowed_Allowed(t *testing.T) {
 	botCore := &core.DaseinBot{
 		Cfg:            &config.DaseinBotConfig{AllowedUsers: []int64{42}},
 		TelegramClient: telegram.NewDummyClient(),
+		UserRepository: repository.NewUserRepository(mongo.NewDummyClient()),
 	}
 	mw := IsUserAllowed(botCore)
 

@@ -1,6 +1,7 @@
 package core
 
 import (
+	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/adapter/repository"
 	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/client/mongo"
 	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/client/openai"
 	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/client/redis"
@@ -11,7 +12,7 @@ import (
 type DaseinBot struct {
 	Cfg            *config.DaseinBotConfig
 	OpenAIClient   openai.Client
-	MongoClient    mongo.Client
+	UserRepository *repository.UserRepository
 	TelegramClient telegram.Client
 	RedisClient    redis.Client
 }
@@ -24,7 +25,7 @@ func New(cfg *config.Config) *DaseinBot {
 	return &DaseinBot{
 		Cfg:            &cfg.DaseinBot,
 		OpenAIClient:   openai.NewClient(cfg.OpenAI),
-		MongoClient:    mcli,
+		UserRepository: repository.NewUserRepository(mcli),
 		TelegramClient: telegram.NewRealClient(),
 		RedisClient:    redis.NewRealClient(cfg.Redis),
 	}
