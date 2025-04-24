@@ -5,6 +5,8 @@ import (
 	"errors"
 	"reflect"
 	"sync"
+
+	mongodb "go.mongodb.org/mongo-driver/mongo"
 )
 
 type DummyClient struct {
@@ -21,7 +23,7 @@ func (c *DummyClient) Get(ctx context.Context, key int64, result interface{}) er
 	v, ok := c.storage[key]
 	c.mu.RUnlock()
 	if !ok {
-		return errors.New("document not found")
+		return mongodb.ErrNoDocuments
 	}
 	rv := reflect.ValueOf(result)
 	if rv.Kind() != reflect.Ptr || rv.Elem().Kind() != reflect.Struct {
@@ -52,7 +54,7 @@ func (c *DummyClient) Update(ctx context.Context, key int64, update interface{})
 	_, exists := c.storage[key]
 	c.mu.RUnlock()
 	if !exists {
-		return 0, errors.New("document not found")
+		return 0, mongodb.ErrNoDocuments
 	}
 	c.mu.Lock()
 	c.storage[key] = update

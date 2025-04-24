@@ -8,6 +8,7 @@ import (
 	"github.com/go-logr/stdr"
 	gotelegram "github.com/go-telegram/bot"
 	"github.com/go-telegram/bot/models"
+	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/adapter/repository"
 	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/model"
 
 	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/client/mongo"
@@ -29,7 +30,7 @@ func makeBot() *core.DaseinBot {
 		RedisClient:    redis.NewDummyClient(),
 		TelegramClient: telegram.NewDummyClient(),
 		OpenAIClient:   ai,
-		MongoClient:    mongo.NewDummyClient(),
+		UserRepository: repository.NewUserRepository(mongo.NewDummyClient()),
 	}
 }
 
@@ -64,7 +65,11 @@ func TestAnswerHandler_FullFlow(t *testing.T) {
 	bot := makeBot()
 	ctx := logr.NewContext(context.Background(), stdr.New(nil))
 	rs := bot.RedisClient.(*redis.DummyClient)
-	err := rs.Save(ctx, 20, &model.Session{Stage: 0, Answers: make([]string, 2)})
+	_, err := bot.UserRepository.Create(ctx, 20)
+	if err != nil {
+		t.Fatalf("failed to create user: %v", err)
+	}
+	err = rs.Save(ctx, 20, &model.Session{Stage: 0, Answers: make([]string, 2)})
 	if err != nil {
 		t.Fatalf("failed to save session: %v", err)
 	}
