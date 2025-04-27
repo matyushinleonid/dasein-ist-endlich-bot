@@ -25,7 +25,7 @@ func BeginHandler(b *core.DaseinBot) gotelegram.HandlerFunc {
 			Stage:   0,
 			Answers: make([]string, len(b.Cfg.Questions)),
 		}
-		if err := b.RedisClient.Save(ctx, chatID, &sess); err != nil {
+		if err := b.SessionRepository.Save(ctx, chatID, &sess); err != nil {
 			logger.Error(err, "failed to save session to Redis")
 			return
 		}
@@ -45,8 +45,7 @@ func AnswerHandler(b *core.DaseinBot) gotelegram.HandlerFunc {
 
 		chatID := update.Message.Chat.ID
 
-		var sess model.Session
-		err := b.RedisClient.Load(ctx, chatID, &sess)
+		sess, err := b.SessionRepository.Get(ctx, chatID)
 		if err != nil {
 
 			EchoHandler(b)(ctx, tgbot, update)
@@ -57,7 +56,7 @@ func AnswerHandler(b *core.DaseinBot) gotelegram.HandlerFunc {
 		sess.Stage++
 
 		if sess.Stage < len(b.Cfg.Questions) {
-			if err = b.RedisClient.Save(ctx, chatID, &sess); err != nil {
+			if err = b.SessionRepository.Save(ctx, chatID, sess); err != nil {
 				logger.Error(err, "failed to update session in Redis")
 			}
 			nextQ := b.Cfg.Questions[sess.Stage]
@@ -107,7 +106,7 @@ func AnswerHandler(b *core.DaseinBot) gotelegram.HandlerFunc {
 			logger.Error(err, "unable to send final message")
 		}
 
-		if err = b.RedisClient.Delete(ctx, chatID); err != nil {
+		if err = b.SessionRepository.Delete(ctx, chatID); err != nil {
 			logger.Error(err, "failed to delete session from Redis")
 		}
 	}

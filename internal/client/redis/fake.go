@@ -2,7 +2,6 @@ package redis
 
 import (
 	"context"
-	"errors"
 	"reflect"
 	"sync"
 )
@@ -19,7 +18,7 @@ func NewDummyClient() *DummyClient {
 func (c *DummyClient) Save(ctx context.Context, key int64, value interface{}) error {
 	rv := reflect.ValueOf(value)
 	if rv.Kind() != reflect.Ptr || (rv.Elem().Kind() != reflect.Struct && rv.Elem().Kind() != reflect.Slice) {
-		return errors.New("value must be pointer to struct or slice")
+		return ErrInvalidType
 	}
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -32,15 +31,15 @@ func (c *DummyClient) Load(ctx context.Context, key int64, result interface{}) e
 	v, ok := c.storage[key]
 	c.mu.RUnlock()
 	if !ok {
-		return errors.New("data not found for key")
+		return ErrNotFound
 	}
 	rv := reflect.ValueOf(result)
 	if rv.Kind() != reflect.Ptr || (rv.Elem().Kind() != reflect.Struct && rv.Elem().Kind() != reflect.Slice) {
-		return errors.New("result argument must be pointer to struct or slice")
+		return ErrInvalidType
 	}
 	val := reflect.ValueOf(v)
 	if val.Type() != rv.Type() {
-		return errors.New("stored value type does not match result type")
+		return ErrInvalidType
 	}
 	rv.Elem().Set(val.Elem())
 	return nil
