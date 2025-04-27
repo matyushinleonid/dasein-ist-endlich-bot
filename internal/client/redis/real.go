@@ -45,7 +45,7 @@ func (c *RealClient) Load(ctx context.Context, key int64, result interface{}) er
 	data, err := c.rdb.Get(ctx, c.key(key)).Bytes()
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
-			return fmt.Errorf("data not found for key %d", key)
+			return ErrNotFound
 		}
 		return fmt.Errorf("redis.Get: %w", err)
 	}

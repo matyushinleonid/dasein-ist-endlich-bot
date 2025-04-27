@@ -10,11 +10,11 @@ import (
 )
 
 type DaseinBot struct {
-	Cfg            *config.DaseinBotConfig
-	OpenAIClient   openai.Client
-	UserRepository *repository.UserRepository
-	TelegramClient telegram.Client
-	RedisClient    redis.Client
+	Cfg               *config.DaseinBotConfig
+	OpenAIClient      openai.Client
+	UserRepository    *repository.UserRepository
+	TelegramClient    telegram.Client
+	SessionRepository *repository.SessionRepository
 }
 
 func New(cfg *config.Config) *DaseinBot {
@@ -23,10 +23,10 @@ func New(cfg *config.Config) *DaseinBot {
 		panic("failed to init mongo: " + err.Error())
 	}
 	return &DaseinBot{
-		Cfg:            &cfg.DaseinBot,
-		OpenAIClient:   openai.NewClient(cfg.OpenAI),
-		UserRepository: repository.NewUserRepository(mcli),
-		TelegramClient: telegram.NewRealClient(),
-		RedisClient:    redis.NewRealClient(cfg.Redis),
+		Cfg:               &cfg.DaseinBot,
+		OpenAIClient:      openai.NewClient(cfg.OpenAI),
+		UserRepository:    repository.NewUserRepository(mcli),
+		TelegramClient:    telegram.NewRealClient(),
+		SessionRepository: repository.NewSessionRepository(redis.NewRealClient(cfg.Redis)),
 	}
 }

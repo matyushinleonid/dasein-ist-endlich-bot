@@ -26,11 +26,11 @@ func makeBot() *core.DaseinBot {
 	ai := openai.NewDummyClient(0)
 	ai.SendJSONOutput = "{\"days_left\":42,\"description\":\"some desc\"}"
 	return &core.DaseinBot{
-		Cfg:            cfg,
-		RedisClient:    redis.NewDummyClient(),
-		TelegramClient: telegram.NewDummyClient(),
-		OpenAIClient:   ai,
-		UserRepository: repository.NewUserRepository(mongo.NewDummyClient()),
+		Cfg:               cfg,
+		SessionRepository: repository.NewSessionRepository(redis.NewDummyClient()),
+		TelegramClient:    telegram.NewDummyClient(),
+		OpenAIClient:      ai,
+		UserRepository:    repository.NewUserRepository(mongo.NewDummyClient()),
 	}
 }
 
@@ -50,9 +50,7 @@ func TestBeginHandler(t *testing.T) {
 		t.Errorf("expected q1, got %q", got)
 	}
 
-	rs := bot.RedisClient.(*redis.DummyClient)
-	var sess model.Session
-	err := rs.Load(ctx, 10, &sess)
+	sess, err := bot.SessionRepository.Get(ctx, 10)
 	if err != nil {
 		t.Fatalf("expected session, got err %v", err)
 	}
@@ -64,12 +62,13 @@ func TestBeginHandler(t *testing.T) {
 func TestAnswerHandler_FullFlow(t *testing.T) {
 	bot := makeBot()
 	ctx := logr.NewContext(context.Background(), stdr.New(nil))
-	rs := bot.RedisClient.(*redis.DummyClient)
+
 	_, err := bot.UserRepository.Create(ctx, 20)
 	if err != nil {
 		t.Fatalf("failed to create user: %v", err)
 	}
-	err = rs.Save(ctx, 20, &model.Session{Stage: 0, Answers: make([]string, 2)})
+
+	err = bot.SessionRepository.Save(ctx, 20, &model.Session{Stage: 0, Answers: make([]string, 2)})
 	if err != nil {
 		t.Fatalf("failed to save session: %v", err)
 	}
@@ -83,8 +82,7 @@ func TestAnswerHandler_FullFlow(t *testing.T) {
 		t.Fatalf("expected next q2, got %v", d.SentMessages)
 	}
 
-	var sess model.Session
-	err = rs.Load(ctx, 20, &sess)
+	sess, err := bot.SessionRepository.Get(ctx, 20)
 	if err != nil {
 		t.Fatalf("got err %v", err)
 	}
@@ -103,7 +101,7 @@ func TestAnswerHandler_FullFlow(t *testing.T) {
 		t.Errorf("unexpected final text: %q", d.SentMessages[1].Text)
 	}
 
-	if err = rs.Load(ctx, 20, &sess); err == nil {
+	if _, err = bot.SessionRepository.Get(ctx, 20); err == nil {
 		t.Error("expected session deleted, still exists")
 	}
 }
