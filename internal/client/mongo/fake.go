@@ -10,8 +10,13 @@ import (
 )
 
 type DummyClient struct {
-	mu      sync.RWMutex
-	storage map[int64]interface{}
+	mu           sync.RWMutex
+	storage      map[int64]interface{}
+	ErrOnGet     error
+	ErrOnCreate  error
+	ErrOnUpdate  error
+	ErrOnDelete  error
+	ErrOnFindAll error
 }
 
 func NewDummyClient() *DummyClient {
@@ -19,6 +24,9 @@ func NewDummyClient() *DummyClient {
 }
 
 func (c *DummyClient) Get(ctx context.Context, key int64, result interface{}) error {
+	if c.ErrOnGet != nil {
+		return c.ErrOnGet
+	}
 	c.mu.RLock()
 	v, ok := c.storage[key]
 	c.mu.RUnlock()
@@ -34,6 +42,9 @@ func (c *DummyClient) Get(ctx context.Context, key int64, result interface{}) er
 }
 
 func (c *DummyClient) Create(ctx context.Context, doc interface{}) (int64, error) {
+	if c.ErrOnCreate != nil {
+		return 0, c.ErrOnCreate
+	}
 	rv := reflect.ValueOf(doc)
 	if rv.Kind() != reflect.Struct {
 		return 0, errors.New("doc must be struct")
@@ -50,6 +61,9 @@ func (c *DummyClient) Create(ctx context.Context, doc interface{}) (int64, error
 }
 
 func (c *DummyClient) Update(ctx context.Context, key int64, update interface{}) (int64, error) {
+	if c.ErrOnUpdate != nil {
+		return 0, c.ErrOnUpdate
+	}
 	c.mu.RLock()
 	_, exists := c.storage[key]
 	c.mu.RUnlock()
@@ -63,6 +77,9 @@ func (c *DummyClient) Update(ctx context.Context, key int64, update interface{})
 }
 
 func (c *DummyClient) Delete(ctx context.Context, key int64) (int64, error) {
+	if c.ErrOnDelete != nil {
+		return 0, c.ErrOnDelete
+	}
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	if _, existed := c.storage[key]; existed {
@@ -73,6 +90,9 @@ func (c *DummyClient) Delete(ctx context.Context, key int64) (int64, error) {
 }
 
 func (c *DummyClient) FindAll(ctx context.Context) (Cursor, error) {
+	if c.ErrOnFindAll != nil {
+		return nil, c.ErrOnFindAll
+	}
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 

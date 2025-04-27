@@ -7,8 +7,11 @@ import (
 )
 
 type DummyClient struct {
-	mu      sync.RWMutex
-	storage map[int64]interface{}
+	mu          sync.RWMutex
+	storage     map[int64]interface{}
+	ErrOnSave   error
+	ErrOnLoad   error
+	ErrOnDelete error
 }
 
 func NewDummyClient() *DummyClient {
@@ -16,6 +19,9 @@ func NewDummyClient() *DummyClient {
 }
 
 func (c *DummyClient) Save(ctx context.Context, key int64, value interface{}) error {
+	if c.ErrOnSave != nil {
+		return c.ErrOnSave
+	}
 	rv := reflect.ValueOf(value)
 	if rv.Kind() != reflect.Ptr || (rv.Elem().Kind() != reflect.Struct && rv.Elem().Kind() != reflect.Slice) {
 		return ErrInvalidType
@@ -27,6 +33,9 @@ func (c *DummyClient) Save(ctx context.Context, key int64, value interface{}) er
 }
 
 func (c *DummyClient) Load(ctx context.Context, key int64, result interface{}) error {
+	if c.ErrOnLoad != nil {
+		return c.ErrOnLoad
+	}
 	c.mu.RLock()
 	v, ok := c.storage[key]
 	c.mu.RUnlock()
@@ -46,6 +55,9 @@ func (c *DummyClient) Load(ctx context.Context, key int64, result interface{}) e
 }
 
 func (c *DummyClient) Delete(ctx context.Context, key int64) error {
+	if c.ErrOnDelete != nil {
+		return c.ErrOnDelete
+	}
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	delete(c.storage, key)

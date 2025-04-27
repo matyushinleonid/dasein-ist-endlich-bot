@@ -11,7 +11,9 @@ type DummyClient struct {
 		ChatID int64
 		Text   string
 	}
-	SentTypingChats []int64
+	SentTypingChats       []int64
+	ErrOnSendMessage      error
+	ErrOnSendTypingAction error
 }
 
 func NewDummyClient() *DummyClient {
@@ -19,6 +21,9 @@ func NewDummyClient() *DummyClient {
 }
 
 func (d *DummyClient) SendMessage(ctx context.Context, bot *gotelegram.Bot, chatID int64, text string) error {
+	if d.ErrOnSendMessage != nil {
+		return d.ErrOnSendMessage
+	}
 	d.SentMessages = append(d.SentMessages, struct {
 		ChatID int64
 		Text   string
@@ -27,6 +32,9 @@ func (d *DummyClient) SendMessage(ctx context.Context, bot *gotelegram.Bot, chat
 }
 
 func (d *DummyClient) SendTypingAction(ctx context.Context, bot *gotelegram.Bot, chatID int64) error {
+	if d.ErrOnSendTypingAction != nil {
+		return d.ErrOnSendTypingAction
+	}
 	d.SentTypingChats = append(d.SentTypingChats, chatID)
 	return nil
 }

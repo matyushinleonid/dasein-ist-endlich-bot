@@ -21,6 +21,10 @@ func IsUpdateLegal(b *core.DaseinBot) gotelegram.Middleware {
 				logger.Info("message text is empty")
 				return
 			}
+			if update.Message.From.ID != update.Message.Chat.ID {
+				logger.Info("message from id is not equal to chat id")
+				return
+			}
 			next(ctx, tgbot, update)
 		}
 	}
