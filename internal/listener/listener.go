@@ -47,6 +47,8 @@ func (b *Listener) Run(ctx context.Context) error {
 	tgbot.RegisterHandler(gotelegram.HandlerTypeMessageText, "/about", gotelegram.MatchTypeExact, handler.AboutHandler(b.DaseinBot))
 	tgbot.RegisterHandler(gotelegram.HandlerTypeMessageText, "/help", gotelegram.MatchTypeExact, handler.HelpHandler(b.DaseinBot))
 	tgbot.RegisterHandler(gotelegram.HandlerTypeMessageText, "/begin", gotelegram.MatchTypeExact, handler.BeginHandler(b.DaseinBot))
+	tgbot.RegisterHandler(gotelegram.HandlerTypeMessageText, "/notification", gotelegram.MatchTypeExact, handler.NotificationFrequencyHandler(b.DaseinBot))
+	tgbot.RegisterHandler(gotelegram.HandlerTypeCallbackQueryData, handler.NfCallbackPrefix, gotelegram.MatchTypePrefix, handler.NotificationFrequencyCallbackHandler(b.DaseinBot))
 
 	logger.Info("starting tgbot")
 	tgbot.Start(ctx)

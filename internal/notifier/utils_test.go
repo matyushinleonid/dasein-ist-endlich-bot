@@ -15,9 +15,9 @@ func TestFormatNotificationMessage(t *testing.T) {
 		death    time.Time
 		expected string
 	}{
-		{now.Add(5 * 24 * time.Hour), "У вас осталось 5 дней в этом мире."},
-		{now.Add(5*time.Hour + 1*time.Minute), "У вас осталось 1 дней в этом мире."},
-		{now.Add(-24 * time.Hour), "У вас осталось 0 дней в этом мире."},
+		{now.Add(5 * 24 * time.Hour), "Days left in this world: 5"},
+		{now.Add(5*time.Hour + 1*time.Minute), "Days left in this world: 1"},
+		{now.Add(-24 * time.Hour), "Days left in this world: 0"},
 	}
 
 	for _, tc := range tests {

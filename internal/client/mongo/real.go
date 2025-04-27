@@ -6,7 +6,9 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/client/retry"
 	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/config"
+
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -41,11 +43,12 @@ func NewRealClient(cfg config.MongoDBConfig) (Client, error) {
 }
 
 func (r *RealClient) Get(ctx context.Context, key int64, result interface{}) error {
-	filter := bson.M{"_id": key}
-	err := r.collection.FindOne(ctx, filter).Decode(result)
+	err := retry.Do(ctx, retry.DefaultConfig(), func() error {
+		return r.collection.FindOne(ctx, bson.M{"_id": key}).Decode(result)
+	})
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
-			return fmt.Errorf("document not found by key %d", key)
+			return ErrNotFound
 		}
 		return err
 	}
@@ -53,7 +56,12 @@ func (r *RealClient) Get(ctx context.Context, key int64, result interface{}) err
 }
 
 func (r *RealClient) Create(ctx context.Context, doc interface{}) (int64, error) {
-	res, err := r.collection.InsertOne(ctx, doc)
+	var res *mongo.InsertOneResult
+	err := retry.Do(ctx, retry.DefaultConfig(), func() error {
+		var e error
+		res, e = r.collection.InsertOne(ctx, doc)
+		return e
+	})
 	if err != nil {
 		return 0, err
 	}
@@ -76,7 +84,12 @@ func (r *RealClient) Update(ctx context.Context, key int64, update interface{}) 
 	delete(m, "_id")
 
 	filter := bson.M{"_id": key}
-	res, err := r.collection.UpdateOne(ctx, filter, bson.M{"$set": m})
+	var res *mongo.UpdateResult
+	err = retry.Do(ctx, retry.DefaultConfig(), func() error {
+		var e error
+		res, e = r.collection.UpdateOne(ctx, filter, bson.M{"$set": m})
+		return e
+	})
 	if err != nil {
 		return 0, err
 	}
@@ -85,7 +98,12 @@ func (r *RealClient) Update(ctx context.Context, key int64, update interface{}) 
 
 func (r *RealClient) Delete(ctx context.Context, key int64) (int64, error) {
 	filter := bson.M{"_id": key}
-	res, err := r.collection.DeleteOne(ctx, filter)
+	var res *mongo.DeleteResult
+	err := retry.Do(ctx, retry.DefaultConfig(), func() error {
+		var e error
+		res, e = r.collection.DeleteOne(ctx, filter)
+		return e
+	})
 	if err != nil {
 		return 0, err
 	}
@@ -93,7 +111,12 @@ func (r *RealClient) Delete(ctx context.Context, key int64) (int64, error) {
 }
 
 func (r *RealClient) FindAll(ctx context.Context) (Cursor, error) {
-	cursor, err := r.collection.Find(ctx, bson.M{}, options.Find().SetBatchSize(100))
+	var cursor *mongo.Cursor
+	err := retry.Do(ctx, retry.DefaultConfig(), func() error {
+		var e error
+		cursor, e = r.collection.Find(ctx, bson.M{}, options.Find().SetBatchSize(100))
+		return e
+	})
 	if err != nil {
 		return nil, fmt.Errorf("mongo FindAll failed: %w", err)
 	}

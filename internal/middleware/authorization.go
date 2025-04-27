@@ -12,6 +12,10 @@ import (
 func IsUserAllowed(b *core.DaseinBot) gotelegram.Middleware {
 	return func(next gotelegram.HandlerFunc) gotelegram.HandlerFunc {
 		return func(ctx context.Context, tgbot *gotelegram.Bot, update *models.Update) {
+			if update.CallbackQuery != nil {
+				next(ctx, tgbot, update)
+				return
+			}
 			logger := logr.FromContextOrDiscard(ctx).WithName("isUserAllowed").WithValues("chat_id", update.Message.Chat.ID, "user_id", update.Message.From.ID)
 			userID := update.Message.From.ID
 			allowed := false
@@ -27,11 +31,6 @@ func IsUserAllowed(b *core.DaseinBot) gotelegram.Middleware {
 					logger.Error(err, "unable to send message")
 				}
 				return
-			}
-
-			_, err := b.UserRepository.Create(ctx, update.Message.From.ID)
-			if err != nil {
-				logger.Error(err, "failed to create user")
 			}
 
 			next(ctx, tgbot, update)

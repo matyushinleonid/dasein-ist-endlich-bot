@@ -7,7 +7,6 @@ import (
 
 	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/client/mongo"
 	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/model"
-	mongodb "go.mongodb.org/mongo-driver/mongo"
 )
 
 var ErrUserNotFound = errors.New("user not found")
@@ -23,7 +22,7 @@ func NewUserRepository(client mongo.Client) *UserRepository {
 func (r *UserRepository) Get(ctx context.Context, id int64) (*model.User, error) {
 	var u model.User
 	if err := r.mongoClient.Get(ctx, id, &u); err != nil {
-		if errors.Is(err, mongodb.ErrNoDocuments) {
+		if errors.Is(err, mongo.ErrNotFound) {
 			return nil, fmt.Errorf("%w: user %d", ErrUserNotFound, id)
 		}
 		return nil, fmt.Errorf("db: could not get user %d: %w", id, err)
@@ -35,7 +34,7 @@ func (r *UserRepository) UserExists(ctx context.Context, id int64) (bool, error)
 	var u model.User
 	err := r.mongoClient.Get(ctx, id, &u)
 	if err != nil {
-		if errors.Is(err, mongodb.ErrNoDocuments) {
+		if errors.Is(err, mongo.ErrNotFound) {
 			return false, nil
 		}
 		return false, fmt.Errorf("db: checking existence for user %d: %w", id, err)

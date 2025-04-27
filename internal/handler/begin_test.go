@@ -96,7 +96,7 @@ func TestAnswerHandler_FullFlow(t *testing.T) {
 	if len(d.SentMessages) != 2 {
 		t.Fatalf("expected final message count 2, got %d", len(d.SentMessages))
 	}
-	expected := "У вас осталось 42 дней в этом мире.\n\nsome desc"
+	expected := "Days left in this world: 42\n\nsome desc"
 	if d.SentMessages[1].Text != expected {
 		t.Errorf("unexpected final text: %q", d.SentMessages[1].Text)
 	}

@@ -2,12 +2,14 @@ package handler
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
 	"github.com/go-logr/logr"
 	gotelegram "github.com/go-telegram/bot"
 	"github.com/go-telegram/bot/models"
+	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/adapter/repository"
 
 	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/core"
 	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/model"
@@ -27,6 +29,10 @@ func BeginHandler(b *core.DaseinBot) gotelegram.HandlerFunc {
 		}
 		if err := b.SessionRepository.Save(ctx, chatID, &sess); err != nil {
 			logger.Error(err, "failed to save session to Redis")
+			err = b.TelegramClient.SendMessage(ctx, tgbot, chatID, "Redis is not available, please try again later.")
+			if err != nil {
+				logger.Error(err, "failed to send error message")
+			}
 			return
 		}
 
@@ -47,8 +53,15 @@ func AnswerHandler(b *core.DaseinBot) gotelegram.HandlerFunc {
 
 		sess, err := b.SessionRepository.Get(ctx, chatID)
 		if err != nil {
-
-			EchoHandler(b)(ctx, tgbot, update)
+			if errors.Is(err, repository.ErrSessionNotFound) {
+				HelpHandler(b)(ctx, tgbot, update)
+				return
+			}
+			logger.Error(err, "failed to get session from Redis")
+			err = b.TelegramClient.SendMessage(ctx, tgbot, chatID, "Redis is not available, please try again later.")
+			if err != nil {
+				logger.Error(err, "failed to send error message")
+			}
 			return
 		}
 
@@ -58,6 +71,11 @@ func AnswerHandler(b *core.DaseinBot) gotelegram.HandlerFunc {
 		if sess.Stage < len(b.Cfg.Questions) {
 			if err = b.SessionRepository.Save(ctx, chatID, sess); err != nil {
 				logger.Error(err, "failed to update session in Redis")
+				err = b.TelegramClient.SendMessage(ctx, tgbot, chatID, "Redis is not available, please try again later.")
+				if err != nil {
+					logger.Error(err, "failed to send error message")
+				}
+				return
 			}
 			nextQ := b.Cfg.Questions[sess.Stage]
 			if err = b.TelegramClient.SendMessage(ctx, tgbot, chatID, nextQ); err != nil {
@@ -82,11 +100,20 @@ func AnswerHandler(b *core.DaseinBot) gotelegram.HandlerFunc {
 			&response,
 		); err != nil {
 			logger.Error(err, "unable to query OpenAI")
+			err = b.TelegramClient.SendMessage(ctx, tgbot, chatID, "OpenAI is not available, please try again later.")
+			if err != nil {
+				logger.Error(err, "failed to send error message")
+			}
+			return
 		}
 
 		user, err := b.UserRepository.Get(ctx, chatID)
 		if err != nil {
 			logger.Error(err, "unable to get user from DB")
+			err = b.TelegramClient.SendMessage(ctx, tgbot, chatID, "Database is not available, please try again later.")
+			if err != nil {
+				logger.Error(err, "failed to send error message")
+			}
 			return
 		}
 		user.DeathTime = model.DeathTime(time.Now(), response.DaysLeft)
@@ -95,19 +122,26 @@ func AnswerHandler(b *core.DaseinBot) gotelegram.HandlerFunc {
 		user.NotificationFrequency = model.Daily
 		if err = b.UserRepository.Update(ctx, user); err != nil {
 			logger.Error(err, "unable to update user in DB")
+			err = b.TelegramClient.SendMessage(ctx, tgbot, chatID, "Database is not available, please try again later.")
+			if err != nil {
+				logger.Error(err, "failed to send error message")
+			}
+			return
 		}
 
 		respText := fmt.Sprintf(
-			"У вас осталось %d дней в этом мире.\n\n%s",
+			"Days left in this world: %d\n\n%s",
 			response.DaysLeft,
 			response.Description,
 		)
 		if err = b.TelegramClient.SendMessage(ctx, tgbot, chatID, respText); err != nil {
 			logger.Error(err, "unable to send final message")
+			return
 		}
 
 		if err = b.SessionRepository.Delete(ctx, chatID); err != nil {
 			logger.Error(err, "failed to delete session from Redis")
+			return
 		}
 	}
 }
