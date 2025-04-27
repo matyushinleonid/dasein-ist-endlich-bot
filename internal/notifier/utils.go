@@ -14,7 +14,7 @@ func FormatNotificationMessage(u model.User, now time.Time) string {
 	if daysLeft < 0 {
 		daysLeft = 0
 	}
-	return fmt.Sprintf("У вас осталось %d дней в этом мире.", daysLeft)
+	return fmt.Sprintf("Days left in this world: %d", daysLeft)
 }
 
 func ShouldNotify(u model.User, now time.Time) (bool, error) {

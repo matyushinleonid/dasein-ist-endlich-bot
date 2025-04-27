@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/client/retry"
 	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/config"
 	"github.com/redis/go-redis/v9"
 )
@@ -35,14 +36,22 @@ func (c *RealClient) Save(ctx context.Context, key int64, value interface{}) err
 	if err != nil {
 		return fmt.Errorf("json.Marshal: %w", err)
 	}
-	if err := c.rdb.Set(ctx, c.key(key), data, c.ttl).Err(); err != nil {
+	err = retry.Do(ctx, retry.DefaultConfig(), func() error {
+		return c.rdb.Set(ctx, c.key(key), data, c.ttl).Err()
+	})
+	if err != nil {
 		return fmt.Errorf("redis.Set: %w", err)
 	}
 	return nil
 }
 
 func (c *RealClient) Load(ctx context.Context, key int64, result interface{}) error {
-	data, err := c.rdb.Get(ctx, c.key(key)).Bytes()
+	var data []byte
+	err := retry.Do(ctx, retry.DefaultConfig(), func() error {
+		var e error
+		data, e = c.rdb.Get(ctx, c.key(key)).Bytes()
+		return e
+	})
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
 			return ErrNotFound
@@ -56,7 +65,10 @@ func (c *RealClient) Load(ctx context.Context, key int64, result interface{}) er
 }
 
 func (c *RealClient) Delete(ctx context.Context, key int64) error {
-	if err := c.rdb.Del(ctx, c.key(key)).Err(); err != nil {
+	err := retry.Do(ctx, retry.DefaultConfig(), func() error {
+		return c.rdb.Del(ctx, c.key(key)).Err()
+	})
+	if err != nil {
 		return fmt.Errorf("redis.Del: %w", err)
 	}
 	return nil

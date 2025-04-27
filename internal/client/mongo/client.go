@@ -2,7 +2,10 @@ package mongo
 
 import (
 	"context"
+	"errors"
 )
+
+var ErrNotFound = errors.New("user not found")
 
 type Cursor interface {
 	Next(ctx context.Context) bool

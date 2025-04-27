@@ -57,8 +57,8 @@ func TestNotifier_NotifyAll(t *testing.T) {
 	}
 
 	want := map[int64]string{
-		1: "У вас осталось 5 дней в этом мире.",
-		2: "У вас осталось 0 дней в этом мире.",
+		1: "Days left in this world: 5",
+		2: "Days left in this world: 0",
 	}
 
 	for _, m := range msgs {

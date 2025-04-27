@@ -7,7 +7,9 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/client/retry"
 	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/config"
+
 	"github.com/openai/openai-go"
 	"github.com/openai/openai-go/option"
 	"github.com/openai/openai-go/packages/param"
@@ -39,7 +41,12 @@ func (r *RealClient) SendText(ctx context.Context, userID int64, userMessage str
 			openai.UserMessage(userMessage),
 		},
 	}
-	resp, err := r.client.Chat.Completions.New(ctx, params)
+	var resp *openai.ChatCompletion
+	err := retry.Do(ctx, retry.DefaultConfig(), func() error {
+		var e error
+		resp, e = r.client.Chat.Completions.New(ctx, params)
+		return e
+	})
 	if err != nil {
 		return "", fmt.Errorf("openai request failed: %w", err)
 	}
@@ -70,8 +77,12 @@ func (r *RealClient) SendJSON(ctx context.Context, userID int64, userMessage, sc
 			openai.DeveloperMessage("Current datetime (When user have answered the questions): " + time.Now().Format("2006-01-02 15:04:05")),
 		},
 	}
-
-	resp, err := r.client.Chat.Completions.New(ctx, params)
+	var resp *openai.ChatCompletion
+	err := retry.Do(ctx, retry.DefaultConfig(), func() error {
+		var e error
+		resp, e = r.client.Chat.Completions.New(ctx, params)
+		return e
+	})
 	if err != nil {
 		return "", fmt.Errorf("openai request failed: %w", err)
 	}

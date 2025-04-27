@@ -31,7 +31,7 @@ func (c *DummyClient) Get(ctx context.Context, key int64, result interface{}) er
 	v, ok := c.storage[key]
 	c.mu.RUnlock()
 	if !ok {
-		return mongodb.ErrNoDocuments
+		return ErrNotFound
 	}
 	rv := reflect.ValueOf(result)
 	if rv.Kind() != reflect.Ptr || rv.Elem().Kind() != reflect.Struct {
