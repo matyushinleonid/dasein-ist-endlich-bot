@@ -55,17 +55,25 @@ func TestNotifier_NotifyAll(t *testing.T) {
 	if len(msgs) != 2 {
 		t.Fatalf("expected 2 messages, got %d", len(msgs))
 	}
-	want := []struct {
-		ChatID int64
-		Text   string
-	}{
-		{1, "У вас осталось 5 дней в этом мире."},
-		{2, "У вас осталось 0 дней в этом мире."},
+
+	want := map[int64]string{
+		1: "У вас осталось 5 дней в этом мире.",
+		2: "У вас осталось 0 дней в этом мире.",
 	}
-	for i, m := range msgs {
-		if m.ChatID != want[i].ChatID || m.Text != want[i].Text {
-			t.Errorf("message %d = (%d, %q); want (%d, %q)",
-				i, m.ChatID, m.Text, want[i].ChatID, want[i].Text)
+
+	for _, m := range msgs {
+		expectedText, ok := want[m.ChatID]
+		if !ok {
+			t.Errorf("unexpected message for ChatID %d: %q", m.ChatID, m.Text)
+			continue
 		}
+		if m.Text != expectedText {
+			t.Errorf("message for ChatID %d = %q; want %q", m.ChatID, m.Text, expectedText)
+		}
+		delete(want, m.ChatID)
+	}
+
+	if len(want) > 0 {
+		t.Errorf("missing messages for ChatIDs: %v", want)
 	}
 }

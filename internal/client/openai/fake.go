@@ -8,8 +8,10 @@ import (
 )
 
 type DummyClient struct {
-	Sleep          time.Duration
-	SendJSONOutput string
+	Sleep                  time.Duration
+	SendJSONOutput         string
+	ErrOnSendJSON          error
+	ErrOnSendJSONUnmarshal error
 }
 
 func NewDummyClient(opts ...time.Duration) *DummyClient {
@@ -27,6 +29,9 @@ func (d *DummyClient) SendText(ctx context.Context, userID int64, userMessage st
 
 func (d *DummyClient) SendJSON(ctx context.Context, userID int64, userMessage, schemaName string, schema map[string]interface{}) (string, error) {
 	time.Sleep(d.Sleep)
+	if d.ErrOnSendJSON != nil {
+		return "", d.ErrOnSendJSON
+	}
 	fake := map[string]interface{}{
 		"schemaName":    schemaName,
 		"originalQuery": userMessage,
@@ -47,6 +52,9 @@ func (d *DummyClient) SendJSONUnmarshal(ctx context.Context, userID int64, userM
 	raw, err := d.SendJSON(ctx, userID, userMessage, schemaName, schema)
 	if err != nil {
 		return err
+	}
+	if d.ErrOnSendJSONUnmarshal != nil {
+		return d.ErrOnSendJSONUnmarshal
 	}
 	if err := json.Unmarshal([]byte(raw), out); err != nil {
 		return fmt.Errorf("dummy unmarshal error into %T: %w", out, err)
