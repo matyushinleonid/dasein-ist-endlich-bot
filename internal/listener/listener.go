@@ -33,11 +33,14 @@ func (b *Listener) Run(ctx context.Context) error {
 	}
 	if b.Cfg.CheckIfUserAllowed {
 		opts = append(opts, gotelegram.WithMiddlewares(
-			middleware.IsUpdateLegal(b.DaseinBot),
 			middleware.IsUserAllowed(b.DaseinBot),
-			middleware.RegisterUser(b.DaseinBot)),
-		)
+		))
 	}
+	opts = append(opts, gotelegram.WithMiddlewares(
+		middleware.IsUpdateLegal(b.DaseinBot),
+		middleware.RegisterUser(b.DaseinBot),
+	))
+
 	tgbot, err := gotelegram.New(b.Cfg.Token, opts...)
 	if err != nil {
 		return fmt.Errorf("failed to create Telegram tgbot: %w", err)
