@@ -12,6 +12,8 @@ dasein_bot:
     - "Ваш пол"
     - "Ваш рост (в см)"
     - "Ваш вес (в кг)"
+  answer_max_length: 500
+  openai_user_limit: 100
 openai:
   model: "gpt-4.1-mini"
   dummy: false

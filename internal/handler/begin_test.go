@@ -21,7 +21,8 @@ import (
 
 func makeBot() *core.DaseinBot {
 	cfg := &config.DaseinBotConfig{
-		Questions: []string{"q1", "q2"},
+		Questions:       []string{"q1", "q2"},
+		AnswerMaxLength: 5,
 	}
 	ai := openai.NewDummyClient(0)
 	ai.SendJSONOutput = "{\"days_left\":42,\"description\":\"some desc\"}"
@@ -37,6 +38,11 @@ func makeBot() *core.DaseinBot {
 func TestBeginHandler(t *testing.T) {
 	bot := makeBot()
 	ctx := logr.NewContext(context.Background(), stdr.New(nil))
+
+	_, err := bot.UserRepository.Create(ctx, 10, 1)
+	if err != nil {
+		t.Fatalf("failed to create user: %v", err)
+	}
 
 	handler := BeginHandler(bot)
 	upd := &models.Update{Message: &models.Message{Chat: models.Chat{ID: 10}}}
@@ -59,11 +65,35 @@ func TestBeginHandler(t *testing.T) {
 	}
 }
 
+func TestBeginHandler_LimitExceeded(t *testing.T) {
+	bot := makeBot()
+	ctx := logr.NewContext(context.Background(), stdr.New(nil))
+
+	// No OpenAI requests left
+	_, err := bot.UserRepository.Create(ctx, 42, 0)
+	if err != nil {
+		t.Fatalf("failed to create user: %v", err)
+	}
+
+	handler := BeginHandler(bot)
+	upd := &models.Update{Message: &models.Message{Chat: models.Chat{ID: 42}}}
+	handler(ctx, &gotelegram.Bot{}, upd)
+
+	d := bot.TelegramClient.(*telegram.DummyClient)
+	if len(d.SentMessages) != 1 {
+		t.Fatalf("expected 1 message, got %d", len(d.SentMessages))
+	}
+	want := "You have reached the limit of OpenAI requests. Contact the developer to increase your limit."
+	if d.SentMessages[0].Text != want {
+		t.Errorf("unexpected text:\n got %q\n want %q", d.SentMessages[0].Text, want)
+	}
+}
+
 func TestAnswerHandler_FullFlow(t *testing.T) {
 	bot := makeBot()
 	ctx := logr.NewContext(context.Background(), stdr.New(nil))
 
-	_, err := bot.UserRepository.Create(ctx, 20)
+	_, err := bot.UserRepository.Create(ctx, 20, 1)
 	if err != nil {
 		t.Fatalf("failed to create user: %v", err)
 	}
@@ -103,5 +133,42 @@ func TestAnswerHandler_FullFlow(t *testing.T) {
 
 	if _, err = bot.SessionRepository.Get(ctx, 20); err == nil {
 		t.Error("expected session deleted, still exists")
+	}
+
+	user, _ := bot.UserRepository.Get(ctx, 20)
+	if user.OpenAIRequestsLeft != 0 {
+		t.Errorf("expected OpenAI requests left to be 0, got %d", user.OpenAIRequestsLeft)
+	}
+}
+
+func TestAnswerHandler_TooLongAnswer(t *testing.T) {
+	bot := makeBot()
+	ctx := logr.NewContext(context.Background(), stdr.New(nil))
+
+	err := bot.SessionRepository.Save(ctx, 30, &model.Session{Stage: 0, Answers: make([]string, 2)})
+	if err != nil {
+		t.Fatalf("failed to save session: %v", err)
+	}
+
+	handler := AnswerHandler(bot)
+	// 6 runes (AnswerMaxLength == 5)
+	upd := &models.Update{Message: &models.Message{Chat: models.Chat{ID: 30}, Text: "hello!"}}
+	handler(ctx, &gotelegram.Bot{}, upd)
+
+	d := bot.TelegramClient.(*telegram.DummyClient)
+	if len(d.SentMessages) != 1 {
+		t.Fatalf("expected 1 message, got %d", len(d.SentMessages))
+	}
+	want := "Your message exceeds the maximum length of 5 characters. Please try again."
+	if d.SentMessages[0].Text != want {
+		t.Errorf("unexpected error text:\n got %q\n want %q", d.SentMessages[0].Text, want)
+	}
+
+	sess, err := bot.SessionRepository.Get(ctx, 30)
+	if err != nil {
+		t.Fatalf("failed to get session: %v", err)
+	}
+	if sess.Stage != 0 {
+		t.Errorf("stage advanced on too-long answer: got %d, want 0", sess.Stage)
 	}
 }

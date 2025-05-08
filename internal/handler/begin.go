@@ -23,6 +23,18 @@ func BeginHandler(b *core.DaseinBot) gotelegram.HandlerFunc {
 
 		chatID := update.Message.Chat.ID
 
+		user, err := b.UserRepository.Get(ctx, chatID)
+		if err != nil {
+			logger.Error(err, "unable to get user from DB")
+		}
+		if user.OpenAIRequestsLeft <= 0 {
+			err = b.TelegramClient.SendMessage(ctx, tgbot, chatID, "You have reached the limit of OpenAI requests. Contact the developer to increase your limit.")
+			if err != nil {
+				logger.Error(err, "failed to send limit message")
+			}
+			return
+		}
+
 		sess := model.Session{
 			Stage:   0,
 			Answers: make([]string, len(b.Cfg.Questions)),
@@ -61,6 +73,17 @@ func AnswerHandler(b *core.DaseinBot) gotelegram.HandlerFunc {
 			err = b.TelegramClient.SendMessage(ctx, tgbot, chatID, "Redis is not available, please try again later.")
 			if err != nil {
 				logger.Error(err, "failed to send error message")
+			}
+			return
+		}
+
+		if len([]rune(update.Message.Text)) > b.Cfg.AnswerMaxLength {
+			err = b.TelegramClient.SendMessage(
+				ctx, tgbot, chatID,
+				fmt.Sprintf("Your message exceeds the maximum length of %d characters. Please try again.", b.Cfg.AnswerMaxLength),
+			)
+			if err != nil {
+				logger.Error(err, "failed to send length-exceeded message")
 			}
 			return
 		}
@@ -120,6 +143,7 @@ func AnswerHandler(b *core.DaseinBot) gotelegram.HandlerFunc {
 		user.LastNotification = time.Time{}
 		user.Calculated = true
 		user.NotificationFrequency = model.Daily
+		user.OpenAIRequestsLeft = user.OpenAIRequestsLeft - 1
 		if err = b.UserRepository.Update(ctx, user); err != nil {
 			logger.Error(err, "unable to update user in DB")
 			err = b.TelegramClient.SendMessage(ctx, tgbot, chatID, "Database is not available, please try again later.")

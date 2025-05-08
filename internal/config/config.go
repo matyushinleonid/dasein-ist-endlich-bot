@@ -20,9 +20,11 @@ type DaseinBotConfig struct {
 	AllowedUsers       []int64  `mapstructure:"allowed_users"`
 	Debug              bool     `mapstructure:"debug"`
 	Questions          []string `mapstructure:"questions"`
+	AnswerMaxLength    int      `mapstructure:"answer_max_length"`
 	Start              string   `mapstructure:"start"`
 	Help               string   `mapstructure:"help"`
 	About              string   `mapstructure:"about"`
+	OpenAIUserLimit    int      `mapstructure:"openai_user_limit"`
 }
 
 type OpenAIConfig struct {

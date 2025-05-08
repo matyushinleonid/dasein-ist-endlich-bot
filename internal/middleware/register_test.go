@@ -7,6 +7,7 @@ import (
 	"github.com/go-telegram/bot/models"
 	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/adapter/repository"
 	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/client/mongo"
+	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/config"
 	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/core"
 )
 
@@ -14,11 +15,11 @@ func TestRegisterUser_ExistingUser(t *testing.T) {
 	ctx := context.Background()
 	dc := mongo.NewDummyClient()
 	repo := repository.NewUserRepository(dc)
-	if _, err := repo.Create(ctx, 123); err != nil {
+	if _, err := repo.Create(ctx, 123, 10); err != nil {
 		t.Fatalf("setup: Create error: %v", err)
 	}
 
-	bot := &core.DaseinBot{UserRepository: repo}
+	bot := &core.DaseinBot{UserRepository: repo, Cfg: &config.DaseinBotConfig{OpenAIUserLimit: 30}}
 	mw := RegisterUser(bot)
 
 	called := false
@@ -42,7 +43,7 @@ func TestRegisterUser_NewUser_CreatesAndCallsNext(t *testing.T) {
 	dc := mongo.NewDummyClient()
 	repo := repository.NewUserRepository(dc)
 
-	bot := &core.DaseinBot{UserRepository: repo}
+	bot := &core.DaseinBot{UserRepository: repo, Cfg: &config.DaseinBotConfig{OpenAIUserLimit: 30}}
 	mw := RegisterUser(bot)
 
 	chatID := int64(789)

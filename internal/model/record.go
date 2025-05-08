@@ -26,18 +26,20 @@ type User struct {
 	DeathTime             time.Time             `bson:"death_time"`
 	LastNotification      time.Time             `bson:"last_notification"`
 	NotificationFrequency NotificationFrequency `bson:"notification_frequency"`
+	OpenAIRequestsLeft    int                   `bson:"openai_requests_left"`
 }
 
 func DeathTime(currentTime time.Time, daysLeft int) time.Time {
 	return currentTime.AddDate(0, 0, daysLeft)
 }
 
-func NewUser(id int64) *User {
+func NewUser(id int64, openAIRequestsLeft int) *User {
 	return &User{
 		ID:                    id,
 		Calculated:            false,
 		DeathTime:             time.Time{},
 		LastNotification:      time.Time{},
 		NotificationFrequency: Daily,
+		OpenAIRequestsLeft:    openAIRequestsLeft,
 	}
 }

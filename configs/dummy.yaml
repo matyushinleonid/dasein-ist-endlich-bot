@@ -10,6 +10,8 @@ dasein_bot:
   questions:
     - "Your Date of Birth?"
     - "Your gender?"
+  answer_max_length: 500
+  openai_user_limit: 100
 openai:
   model: "fake-gpt-3.5"
   dummy: true
