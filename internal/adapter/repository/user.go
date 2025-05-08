@@ -42,8 +42,8 @@ func (r *UserRepository) UserExists(ctx context.Context, id int64) (bool, error)
 	return true, nil
 }
 
-func (r *UserRepository) Create(ctx context.Context, id int64) (int64, error) {
-	u := model.NewUser(id)
+func (r *UserRepository) Create(ctx context.Context, id int64, openAIUserLimit int) (int64, error) {
+	u := model.NewUser(id, openAIUserLimit)
 	newID, err := r.mongoClient.Create(ctx, *u)
 	if err != nil {
 		return 0, fmt.Errorf("db: could not create user: %w", err)

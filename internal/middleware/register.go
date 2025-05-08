@@ -27,7 +27,7 @@ func RegisterUser(b *core.DaseinBot) gotelegram.Middleware {
 				next(ctx, tgbot, update)
 				return
 			}
-			if _, err = b.UserRepository.Create(ctx, chatId); err != nil {
+			if _, err = b.UserRepository.Create(ctx, chatId, b.Cfg.OpenAIUserLimit); err != nil {
 				logger.Error(err, "failed to create user")
 				return
 			}
