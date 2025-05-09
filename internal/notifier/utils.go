@@ -8,13 +8,13 @@ import (
 	"github.com/robfig/cron/v3"
 )
 
-func FormatNotificationMessage(u model.User, now time.Time) string {
+func FormatNotificationMessage(daysLeftMessage string, u model.User, now time.Time) string {
 
 	daysLeft := int((u.DeathTime.Sub(now)).Hours()/24 + 0.9999)
 	if daysLeft < 0 {
 		daysLeft = 0
 	}
-	return fmt.Sprintf("Days left in this world: %d", daysLeft)
+	return fmt.Sprintf("%s %d", daysLeftMessage, daysLeft)
 }
 
 func ShouldNotify(u model.User, now time.Time) (bool, error) {

@@ -15,14 +15,14 @@ func TestFormatNotificationMessage(t *testing.T) {
 		death    time.Time
 		expected string
 	}{
-		{now.Add(5 * 24 * time.Hour), "Days left in this world: 5"},
-		{now.Add(5*time.Hour + 1*time.Minute), "Days left in this world: 1"},
-		{now.Add(-24 * time.Hour), "Days left in this world: 0"},
+		{now.Add(5 * 24 * time.Hour), "Days left: 5"},
+		{now.Add(5*time.Hour + 1*time.Minute), "Days left: 1"},
+		{now.Add(-24 * time.Hour), "Days left: 0"},
 	}
 
 	for _, tc := range tests {
 		u := model.User{DeathTime: tc.death}
-		got := FormatNotificationMessage(u, now)
+		got := FormatNotificationMessage("Days left:", u, now)
 		if got != tc.expected {
 			t.Errorf("FormatNotificationMessage(%v): got %q, want %q",
 				tc.death, got, tc.expected)

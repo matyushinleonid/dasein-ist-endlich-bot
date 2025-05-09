@@ -153,13 +153,21 @@ func AnswerHandler(b *core.DaseinBot) gotelegram.HandlerFunc {
 			return
 		}
 
-		respText := fmt.Sprintf(
-			"Days left in this world: %d\n\n%s",
-			response.DaysLeft,
-			response.Description,
-		)
+		respText := response.Description
+		if respText == "" {
+			respText = "Description is not available."
+		}
 		if err = b.TelegramClient.SendMessage(ctx, tgbot, chatID, respText); err != nil {
 			logger.Error(err, "unable to send final message")
+			return
+		}
+		daysLeftText := fmt.Sprintf(
+			"%s %d",
+			b.Cfg.DaysLeftMessage,
+			response.DaysLeft,
+		)
+		if err = b.TelegramClient.SendMessage(ctx, tgbot, chatID, daysLeftText); err != nil {
+			logger.Error(err, "unable to send days left message")
 			return
 		}
 
