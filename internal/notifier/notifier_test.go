@@ -9,6 +9,7 @@ import (
 	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/adapter/repository"
 	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/client/mongo"
 	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/client/telegram"
+	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/config"
 	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/core"
 	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/model"
 )
@@ -44,6 +45,7 @@ func TestNotifier_NotifyAll(t *testing.T) {
 	botCore := &core.DaseinBot{
 		UserRepository: repository.NewUserRepository(mc),
 		TelegramClient: tc,
+		Cfg:            &config.DaseinBotConfig{DaysLeftMessage: "Days left:"},
 	}
 	notifier := New(botCore)
 
@@ -57,8 +59,8 @@ func TestNotifier_NotifyAll(t *testing.T) {
 	}
 
 	want := map[int64]string{
-		1: "Days left in this world: 5",
-		2: "Days left in this world: 0",
+		1: "Days left: 5",
+		2: "Days left: 0",
 	}
 
 	for _, m := range msgs {

@@ -23,6 +23,7 @@ func makeBot() *core.DaseinBot {
 	cfg := &config.DaseinBotConfig{
 		Questions:       []string{"q1", "q2"},
 		AnswerMaxLength: 5,
+		DaysLeftMessage: "Days left in this world:",
 	}
 	ai := openai.NewDummyClient(0)
 	ai.SendJSONOutput = "{\"days_left\":42,\"description\":\"some desc\"}"
@@ -123,12 +124,15 @@ func TestAnswerHandler_FullFlow(t *testing.T) {
 	upd2 := &models.Update{Message: &models.Message{Chat: models.Chat{ID: 20}, Text: "a2"}}
 	handler(ctx, &gotelegram.Bot{}, upd2)
 
-	if len(d.SentMessages) != 2 {
-		t.Fatalf("expected final message count 2, got %d", len(d.SentMessages))
+	if len(d.SentMessages) != 3 {
+		t.Fatalf("expected final message count 3, got %d", len(d.SentMessages))
 	}
-	expected := "Days left in this world: 42\n\nsome desc"
-	if d.SentMessages[1].Text != expected {
+	if d.SentMessages[1].Text != "some desc" {
 		t.Errorf("unexpected final text: %q", d.SentMessages[1].Text)
+	}
+	if d.SentMessages[2].Text != "Days left in this world: 42" {
+		t.Errorf("unexpected final text: %q", d.SentMessages[2].Text)
+
 	}
 
 	if _, err = bot.SessionRepository.Get(ctx, 20); err == nil {

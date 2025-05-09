@@ -38,7 +38,7 @@ func (n *Notifier) NotifyAll(ctx context.Context, tgbot *gotelegram.Bot) error {
 			continue
 		}
 
-		msg := FormatNotificationMessage(u, now)
+		msg := FormatNotificationMessage(n.Cfg.DaysLeftMessage, u, now)
 		if err := n.TelegramClient.SendMessage(ctx, tgbot, u.ID, msg); err != nil {
 			logr.FromContextOrDiscard(ctx).
 				Error(err, "send failed", "user_id", u.ID)
