@@ -32,6 +32,10 @@ func (d *DummyClient) SendMessage(ctx context.Context, bot *gotelegram.Bot, chat
 	return nil
 }
 
+func (d *DummyClient) SendMessageMarkdown(ctx context.Context, bot *gotelegram.Bot, chatID int64, text string) error {
+	return d.SendMessage(ctx, bot, chatID, text)
+}
+
 func (d *DummyClient) SendMessageKeyboard(ctx context.Context, bot *gotelegram.Bot, chatID int64, text string, replyMarkup models.ReplyMarkup) error {
 	return d.SendMessage(ctx, bot, chatID, text)
 }

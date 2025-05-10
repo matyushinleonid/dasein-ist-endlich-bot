@@ -3,7 +3,7 @@ dasein_bot:
   allowed_users: [162573173]
   debug: true
   start: "Welcome to the Dasein ist endlich bot! Press /begin to start a new conversation."
-  about: "Dasein ist endlich bot by Leonid Matyushin. GitHub: https://github.com/matyushinleonid/dasein-ist-endlich-bot"
+  about: "Dasein ist endlich bot by Leonid Matyushin. [GitHub](https://github.com/matyushinleonid/dasein-ist-endlich-bot)"
   help: "Some help on how to use the bot"
   default: "Your response history is empty. Press /begin to start a new conversation."
   illegal: "The action you are trying to perform is not allowed. Press /help to get help."
