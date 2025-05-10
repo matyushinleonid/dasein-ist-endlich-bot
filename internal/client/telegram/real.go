@@ -15,11 +15,12 @@ func NewRealClient() *RealClient {
 	return &RealClient{}
 }
 
-func (c *RealClient) SendMessage(ctx context.Context, tgbot *gotelegram.Bot, chatID int64, text string) error {
+func (c *RealClient) sendMessage(ctx context.Context, tgbot *gotelegram.Bot, parseMode models.ParseMode, chatID int64, text string) error {
 	err := retry.Do(ctx, retry.DefaultConfig(), func() error {
 		_, e := tgbot.SendMessage(ctx, &gotelegram.SendMessageParams{
-			ChatID: chatID,
-			Text:   text,
+			ChatID:    chatID,
+			Text:      text,
+			ParseMode: parseMode,
 		})
 		return e
 	})
@@ -27,6 +28,14 @@ func (c *RealClient) SendMessage(ctx context.Context, tgbot *gotelegram.Bot, cha
 		return fmt.Errorf("failed to send message: %w", err)
 	}
 	return nil
+}
+
+func (c *RealClient) SendMessage(ctx context.Context, tgbot *gotelegram.Bot, chatID int64, text string) error {
+	return c.sendMessage(ctx, tgbot, "", chatID, text)
+}
+
+func (c *RealClient) SendMessageMarkdown(ctx context.Context, tgbot *gotelegram.Bot, chatID int64, text string) error {
+	return c.sendMessage(ctx, tgbot, models.ParseModeMarkdownV1, chatID, text)
 }
 
 func (c *RealClient) SendMessageKeyboard(ctx context.Context, tgbot *gotelegram.Bot, chatID int64, text string, replyMarkup models.ReplyMarkup) error {

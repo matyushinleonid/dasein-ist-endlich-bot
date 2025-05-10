@@ -30,6 +30,9 @@ func (b *Listener) Run(ctx context.Context) error {
 
 	opts := []gotelegram.Option{
 		gotelegram.WithDefaultHandler(handler.AnswerHandler(b.DaseinBot)),
+		gotelegram.WithMiddlewares(
+			middleware.IsUpdateLegal(b.DaseinBot),
+		),
 	}
 	if b.Cfg.CheckIfUserAllowed {
 		opts = append(opts, gotelegram.WithMiddlewares(
@@ -37,7 +40,6 @@ func (b *Listener) Run(ctx context.Context) error {
 		))
 	}
 	opts = append(opts, gotelegram.WithMiddlewares(
-		middleware.IsUpdateLegal(b.DaseinBot),
 		middleware.RegisterUser(b.DaseinBot),
 	))
 
