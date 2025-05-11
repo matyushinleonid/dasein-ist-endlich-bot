@@ -45,7 +45,7 @@ func TestNotifier_NotifyAll(t *testing.T) {
 	botCore := &core.DaseinBot{
 		UserRepository: repository.NewUserRepository(mc),
 		TelegramClient: tc,
-		Cfg:            &config.DaseinBotConfig{DaysLeftMessage: "Days left:"},
+		Cfg:            &config.DaseinBotConfig{DaysLeftMessage: "Days left: %d"},
 	}
 	notifier := New(botCore)
 

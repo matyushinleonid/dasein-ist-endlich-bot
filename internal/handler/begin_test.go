@@ -23,7 +23,7 @@ func makeBot() *core.DaseinBot {
 	cfg := &config.DaseinBotConfig{
 		Questions:       []string{"q1", "q2"},
 		AnswerMaxLength: 5,
-		DaysLeftMessage: "Days left in this world:",
+		DaysLeftMessage: "Days left in this world: %d",
 	}
 	ai := openai.NewDummyClient(0)
 	ai.SendJSONOutput = "{\"days_left\":42,\"description\":\"some desc\"}"

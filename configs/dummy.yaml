@@ -12,7 +12,7 @@ dasein_bot:
     - "Your gender?"
   answer_max_length: 500
   openai_user_limit: 100
-  days_left_message: "Days left in this world:"
+  days_left_message: "Days left in this world: %d"
 openai:
   model: "fake-gpt-3.5"
   dummy: true

@@ -22,7 +22,7 @@ func TestFormatNotificationMessage(t *testing.T) {
 
 	for _, tc := range tests {
 		u := model.User{DeathTime: tc.death}
-		got := FormatNotificationMessage("Days left:", u, now)
+		got := FormatNotificationMessage("Days left: %d", u, now)
 		if got != tc.expected {
 			t.Errorf("FormatNotificationMessage(%v): got %q, want %q",
 				tc.death, got, tc.expected)

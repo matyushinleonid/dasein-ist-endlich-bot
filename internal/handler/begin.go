@@ -162,7 +162,6 @@ func AnswerHandler(b *core.DaseinBot) gotelegram.HandlerFunc {
 			return
 		}
 		daysLeftText := fmt.Sprintf(
-			"%s %d",
 			b.Cfg.DaysLeftMessage,
 			response.DaysLeft,
 		)
