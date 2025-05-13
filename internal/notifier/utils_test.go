@@ -30,16 +30,8 @@ func TestFormatNotificationMessage(t *testing.T) {
 	}
 }
 
-func mustParse(spec string) cron.Schedule {
-	s, err := cron.ParseStandard(spec)
-	if err != nil {
-		panic(err)
-	}
-	return s
-}
-
 func TestShouldNotify(t *testing.T) {
-	now := time.Date(2025, 4, 23, 9, 0, 00, 0, time.UTC)
+	now := time.Date(2025, 4, 23, 7, 0, 00, 0, time.UTC)
 
 	dailySpec := model.NotificationCronMap[model.Daily]
 	if _, err := cron.ParseStandard(dailySpec); err != nil {
@@ -67,7 +59,7 @@ func TestShouldNotify(t *testing.T) {
 			expect: true,
 		},
 		{
-			name: "just notified at 9:00",
+			name: "just notified at 7:00",
 			user: model.User{
 				NotificationFrequency: model.Daily,
 				LastNotification:      now,
@@ -75,7 +67,7 @@ func TestShouldNotify(t *testing.T) {
 			expect: false,
 		},
 		{
-			name: "missed 9:00 today",
+			name: "missed 7:00 today",
 			user: model.User{
 				NotificationFrequency: model.Daily,
 				LastNotification:      now.Add(-2 * time.Hour),
@@ -86,7 +78,7 @@ func TestShouldNotify(t *testing.T) {
 			name: "weekly not yet",
 			user: model.User{
 				NotificationFrequency: model.Weekly,
-				LastNotification:      time.Date(2025, 4, 21, 9, 0, 0, 0, time.UTC),
+				LastNotification:      time.Date(2025, 4, 21, 7, 0, 0, 0, time.UTC),
 			},
 			expect: false,
 		},
@@ -94,7 +86,7 @@ func TestShouldNotify(t *testing.T) {
 			name: "weekly ready",
 			user: model.User{
 				NotificationFrequency: model.Weekly,
-				LastNotification:      time.Date(2025, 4, 16, 9, 0, 0, 0, time.UTC),
+				LastNotification:      time.Date(2025, 4, 16, 7, 0, 0, 0, time.UTC),
 			},
 			expect: true,
 		},

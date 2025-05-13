@@ -13,10 +13,10 @@ var (
 )
 
 var NotificationCronMap = map[NotificationFrequency]string{
-	Daily:   "0 9 * * *",
-	Weekly:  "0 9 * * 1",
-	Monthly: "0 9 1 * *",
-	Yearly:  "0 9 1 1 *",
+	Daily:   "0 7 * * *",
+	Weekly:  "0 7 * * 1",
+	Monthly: "0 7 1 * *",
+	Yearly:  "0 7 1 1 *",
 	Never:   "",
 }
 
