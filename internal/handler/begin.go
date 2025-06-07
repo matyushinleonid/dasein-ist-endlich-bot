@@ -161,14 +161,6 @@ func AnswerHandler(b *core.DaseinBot) gotelegram.HandlerFunc {
 			logger.Error(err, "unable to send final message")
 			return
 		}
-		daysLeftText := fmt.Sprintf(
-			b.Cfg.DaysLeftMessage,
-			response.DaysLeft,
-		)
-		if err = b.TelegramClient.SendMessage(ctx, tgbot, chatID, daysLeftText); err != nil {
-			logger.Error(err, "unable to send days left message")
-			return
-		}
 
 		if err = b.SessionRepository.Delete(ctx, chatID); err != nil {
 			logger.Error(err, "failed to delete session from Redis")
