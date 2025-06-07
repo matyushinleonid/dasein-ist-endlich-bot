@@ -18,7 +18,7 @@ func Recovery(b *core.DaseinBot) gotelegram.Middleware {
 			defer func() {
 				if r := recover(); r != nil {
 					stack := debug.Stack()
-					logger.Error(fmt.Errorf("panic: %v"), "recovered panic in update handler", "stack", string(stack))
+					logger.Error(fmt.Errorf("panic: %v", r), "recovered panic in update handler", "stack", string(stack))
 				}
 			}()
 			next(ctx, bot, update)
