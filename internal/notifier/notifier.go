@@ -65,9 +65,16 @@ func (n *Notifier) Run(ctx context.Context) error {
 		return fmt.Errorf("create telegram bot: %w", err)
 	}
 
-	if err := n.NotifyAll(ctx, tgbot); err != nil {
-		return err
+	defer func() {
+		if r := recover(); r != nil {
+			logger.Error(fmt.Errorf("%v", r), "panic recovered in notifier Run")
+		}
+	}()
+	if err = n.NotifyAll(ctx, tgbot); err != nil {
+		logger.Error(err, "NotifyAll failed")
+	} else {
+		logger.Info("notifier finished")
 	}
-	logger.Info("notifier finished")
+
 	return nil
 }

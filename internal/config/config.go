@@ -26,6 +26,7 @@ type DaseinBotConfig struct {
 	About              string   `mapstructure:"about"`
 	OpenAIUserLimit    int      `mapstructure:"openai_user_limit"`
 	DaysLeftMessage    string   `mapstructure:"days_left_message"`
+	HealthzPort        int      `mapstructure:"healthz_port"`
 }
 
 type OpenAIConfig struct {

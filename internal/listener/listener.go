@@ -28,9 +28,12 @@ func (b *Listener) Run(ctx context.Context) error {
 	defer cancel()
 	logger := logr.FromContextOrDiscard(ctx)
 
+	serveHealth(ctx, logger, b.Cfg.HealthzPort)
+
 	opts := []gotelegram.Option{
 		gotelegram.WithDefaultHandler(handler.AnswerHandler(b.DaseinBot)),
 		gotelegram.WithMiddlewares(
+			middleware.Recovery(b.DaseinBot),
 			middleware.IsUpdateLegal(b.DaseinBot),
 		),
 	}
