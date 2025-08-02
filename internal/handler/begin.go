@@ -10,6 +10,7 @@ import (
 	gotelegram "github.com/go-telegram/bot"
 	"github.com/go-telegram/bot/models"
 	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/adapter/repository"
+	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/notifier"
 
 	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/core"
 	"github.com/matyushinleonid/dasein-ist-endlich-bot/internal/model"
@@ -159,6 +160,21 @@ func AnswerHandler(b *core.DaseinBot) gotelegram.HandlerFunc {
 		}
 		if err = b.TelegramClient.SendMessage(ctx, tgbot, chatID, respText); err != nil {
 			logger.Error(err, "unable to send final message")
+			return
+		}
+		now := time.Now()
+		msg := notifier.FormatNotificationMessage(b.Cfg.DaysLeftMessage, *user, now)
+		if err = b.TelegramClient.SendMessage(ctx, tgbot, chatID, msg); err != nil {
+			logr.FromContextOrDiscard(ctx).
+				Error(err, "send failed", "user_id", user.ID)
+		}
+		user.LastNotification = now
+		if err = b.UserRepository.Update(ctx, user); err != nil {
+			logger.Error(err, "unable to update user in DB")
+			err = b.TelegramClient.SendMessage(ctx, tgbot, chatID, "Database is not available, please try again later.")
+			if err != nil {
+				logger.Error(err, "failed to send error message")
+			}
 			return
 		}
 
