@@ -29,7 +29,7 @@ func HelpHandler(b *core.DaseinBot) gotelegram.HandlerFunc {
 			msg += fmt.Sprintf("\n\nDebug info:\n\tRecord:\n%s\n", prettyJSON)
 		}
 
-		err := b.TelegramClient.SendMessage(ctx, tgbot, update.Message.Chat.ID, msg)
+		err := b.TelegramClient.SendMessageMarkdown(ctx, tgbot, update.Message.Chat.ID, msg)
 		if err != nil {
 			logger.Error(err, "unable to send message")
 		}
