@@ -1,12 +1,19 @@
 # dasein-ist-endlich-bot
 
+> [!IMPORTANT]
+> **This project is no longer maintained.**
+>
+> Development continues in **[matyushinleonid/sein-zum-tode](https://github.com/matyushinleonid/sein-zum-tode)**, which is a complete rewrite and the current version of the project.
+>
+> Please use the new repository for the source code, documentation, issues, and further development.
+
 The topic of death remains largely taboo in today’s society (as noted, for example, by Philippe Ariès). This project is designed to help users face the inevitability of death as a phenomenon that will (and indeed **is**) happen to them.
 
 Users are invited to answer a series of questions about their lifestyle, after which a rough estimate of their remaining lifespan is calculated by an LLM-based model. 
 Of course, the resulting number of days left is not meant to be precisely accurate. 
 The real value lies in the daily countdown of remaining days that the bot will send to the user.
 
-* The current Telegram implementation is available as [Sein zum Tode](https://t.me/DaseinIstEndlichBot)
+* The current Telegram implementation is available as [Dasein ist Endlich](https://t.me/DaseinIstEndlichBot)
 * The corresponding ArgoCD application and related Kubernetes resources can be found [here](https://github.com/matyushinleonid/k8s.leonid.sh/tree/main/argocd/dasein-ist-endlich-bot)
 
 ## Description
